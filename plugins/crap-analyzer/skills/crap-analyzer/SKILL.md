@@ -1,6 +1,6 @@
 ---
 name: crap-analyzer
-description: Analyze recently-changed code for Change Risk Anti-Patterns (CRAP) and propose fixes. Computes CRAP = comp² × (1 − cov)³ + comp per changed function using heuristic cyclomatic complexity and test coverage. Works across languages — TypeScript, JavaScript, Python, Java, Kotlin, Go, Ruby, C#, Rust, PHP — and auto-discovers how the repo generates coverage. Use when the user asks to "analyze CRAP", "check code risk", "find risky methods", "compute CRAP on this diff/branch/PR", "run /crap-analyzer", or otherwise wants a risk-based refactor + test plan for recently-changed code. Scope is the diff only — not the whole codebase. Produces a ranked markdown report, proposes extract-method refactors as unified diffs, generates test stubs for uncovered branches, and optionally auto-applies safe refactors after per-change confirmation.
+description: This skill should be used when the user asks to "analyze CRAP", "compute CRAP on this diff/branch/PR", "run /crap-analyzer", "find risky (complex + untested) methods", or otherwise wants a risk-based refactor + test plan for recently-changed code scoped to a diff. Multi-language — TypeScript, JavaScript, Python, Java, Kotlin, Go, Ruby, C#, Rust, PHP — and auto-discovers how the repo generates coverage.
 ---
 
 # CRAP Analyzer
@@ -53,44 +53,7 @@ This skill scopes analysis to a diff (PR, branch, or staged changes), ranks find
 
 ## Parallel per-finding analysis
 
-When `len(findings) >= 3`, draft per-finding proposals in parallel by issuing multiple `Agent` tool calls in a **single message**. Sequential dispatch defeats the point.
-
-**Per-subagent prompt template** (each is self-contained — subagents can't see the main conversation):
-
-> **Draft a refactor + test stubs for one CRAP finding.**
->
-> **Finding:** `<file>:<start_line>` — `<name>` (`<kind>`, `<language>`). Complexity `<N>`, coverage `<pct>%` (`<covered>/<executable>` lines), CRAP score **`<crap>`**.
->
-> **File to read:** `<absolute path to source file>`. Read the entire file for context, then focus on lines `<body_start_line>–<body_end_line>`.
->
-> **Test framework in this repo:** `<Jest | pytest | JUnit 5 | Go testing | RSpec | …>`. Test file convention: `<e.g. alongside source as *.spec.ts>`.
->
-> **Codebase conventions to respect:** `<2–3 bullets from the repo — e.g. "uses pytest fixtures", "async errors return Result<E>", "DI via constructor">`. Read nearby files if you need more context.
->
-> **Deliverable** — one markdown block in exactly this shape:
-> ```markdown
-> ### `<file>:<line>` — `<name>` (CRAP `<score>`)
->
-> **Why it's flagged:** <one sentence naming the dominant factor — complexity, coverage, or both — and pointing at the specific branches>.
->
-> **Refactor proposal:**
-> <unified diff OR fenced code block of the proposed replacement; pick whichever is clearer for the change>
->
-> **Safe to auto-apply?** <yes | no — reason if no, per the rules in SKILL.md step 7>
->
-> **Test stubs to add:**
-> <framework-appropriate fenced block with at least one real assertion per stub>
-> ```
->
-> Keep it tight — one paragraph of "why", the diff, the stubs. No preamble, no alternatives, no "you could also…". If the function is already fine and the high CRAP comes purely from missing tests, skip the refactor block and say so.
-
-**Aggregation by the main agent:**
-
-1. Wait for all subagents to return.
-2. Sort results by CRAP score descending (same order as the findings table).
-3. Print them back-to-back under the report table, unchanged.
-4. **Sanity-check each "safe to auto-apply" claim** against step 7 — subagents sometimes mislabel. Downgrade to "no" if you see a reordered async op, a touched constructor, or a split across a `try` boundary.
-5. Continue to the wrap-up menu (step 6).
+When `len(findings) >= 3`, draft per-finding proposals in parallel by issuing multiple `Agent` tool calls in a **single message**. Sequential dispatch defeats the point. See [references/subagent-prompt.md](references/subagent-prompt.md) for the full prompt template and aggregation rules.
 
 **When to skip parallel dispatch:**
 
@@ -98,7 +61,7 @@ When `len(findings) >= 3`, draft per-finding proposals in parallel by issuing mu
 - User asked for a quick scan only ("just show me the scores") — skip step 5 entirely.
 - The same function appears twice (e.g. overloaded methods across files) — handle it once, inline.
 
-**Tool-use hygiene:** all Agent calls in the same message, each with a self-contained prompt (the subagent can't see this skill or the conversation). Pass absolute paths, not relative ones. Don't include the full diff in the prompt — the subagent only needs the finding metadata and the file path.
+**After subagents return:** sort aggregated results by CRAP score descending and sanity-check every "safe to auto-apply" claim against step 7 — subagents sometimes mislabel. Downgrade to "no" if you see a reordered async op, a touched constructor, or a split across a `try` boundary.
 
 ## Discovering the coverage toolchain
 
