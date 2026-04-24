@@ -41,6 +41,8 @@ This skill scopes analysis to a diff (PR, branch, or staged changes), ranks find
    - **Test stubs.** Generate stubs covering each uncovered branch in the framework the repo uses. See [references/test-stub-templates.md](references/test-stub-templates.md) for templates per framework (Jest/Vitest, pytest, JUnit, Go `testing`, RSpec, xUnit).
    - **Respect the codebase's conventions.** Read nearby code first and match its style (naming, error handling, DI, async patterns). Don't rewrite idioms the project has chosen.
 
+   **When there are 3 or more findings, dispatch subagents in parallel** — one per finding — instead of drafting them sequentially. Each finding is independent (read function → draft refactor → draft stubs), so parallelizing drops wall-clock time from O(n) to O(1) and keeps the main conversation context from ballooning. See [Parallel per-finding analysis](#parallel-per-finding-analysis) for the dispatch contract.
+
 6. **Per-change confirmation for auto-apply.** "Safe refactor" = pure extract-method with no behavior change (same inputs → same outputs, same side effects, same order). For each safe refactor, ask the user "apply this one?" and use Edit only after yes. Never bundle multiple functions into a single apply.
 
 7. **Never auto-apply:**
@@ -48,6 +50,55 @@ This skill scopes analysis to a diff (PR, branch, or staged changes), ranks find
    - Changes to constructors, initializers, or lifecycle hooks without the user seeing the diff first.
    - Changes to reactive/stream operator ordering.
    - Template / markup / view changes (the script doesn't analyze templates — those are always manual).
+
+## Parallel per-finding analysis
+
+When `len(findings) >= 3`, draft per-finding proposals in parallel by issuing multiple `Agent` tool calls in a **single message**. Sequential dispatch defeats the point.
+
+**Per-subagent prompt template** (each is self-contained — subagents can't see the main conversation):
+
+> **Draft a refactor + test stubs for one CRAP finding.**
+>
+> **Finding:** `<file>:<start_line>` — `<name>` (`<kind>`, `<language>`). Complexity `<N>`, coverage `<pct>%` (`<covered>/<executable>` lines), CRAP score **`<crap>`**.
+>
+> **File to read:** `<absolute path to source file>`. Read the entire file for context, then focus on lines `<body_start_line>–<body_end_line>`.
+>
+> **Test framework in this repo:** `<Jest | pytest | JUnit 5 | Go testing | RSpec | …>`. Test file convention: `<e.g. alongside source as *.spec.ts>`.
+>
+> **Codebase conventions to respect:** `<2–3 bullets from the repo — e.g. "uses pytest fixtures", "async errors return Result<E>", "DI via constructor">`. Read nearby files if you need more context.
+>
+> **Deliverable** — one markdown block in exactly this shape:
+> ```markdown
+> ### `<file>:<line>` — `<name>` (CRAP `<score>`)
+>
+> **Why it's flagged:** <one sentence naming the dominant factor — complexity, coverage, or both — and pointing at the specific branches>.
+>
+> **Refactor proposal:**
+> <unified diff OR fenced code block of the proposed replacement; pick whichever is clearer for the change>
+>
+> **Safe to auto-apply?** <yes | no — reason if no, per the rules in SKILL.md step 7>
+>
+> **Test stubs to add:**
+> <framework-appropriate fenced block with at least one real assertion per stub>
+> ```
+>
+> Keep it tight — one paragraph of "why", the diff, the stubs. No preamble, no alternatives, no "you could also…". If the function is already fine and the high CRAP comes purely from missing tests, skip the refactor block and say so.
+
+**Aggregation by the main agent:**
+
+1. Wait for all subagents to return.
+2. Sort results by CRAP score descending (same order as the findings table).
+3. Print them back-to-back under the report table, unchanged.
+4. **Sanity-check each "safe to auto-apply" claim** against step 7 — subagents sometimes mislabel. Downgrade to "no" if you see a reordered async op, a touched constructor, or a split across a `try` boundary.
+5. Continue to the wrap-up menu (step 6).
+
+**When to skip parallel dispatch:**
+
+- `len(findings) < 3` — subagent spin-up overhead eats the win.
+- User asked for a quick scan only ("just show me the scores") — skip step 5 entirely.
+- The same function appears twice (e.g. overloaded methods across files) — handle it once, inline.
+
+**Tool-use hygiene:** all Agent calls in the same message, each with a self-contained prompt (the subagent can't see this skill or the conversation). Pass absolute paths, not relative ones. Don't include the full diff in the prompt — the subagent only needs the finding metadata and the file path.
 
 ## Discovering the coverage toolchain
 
