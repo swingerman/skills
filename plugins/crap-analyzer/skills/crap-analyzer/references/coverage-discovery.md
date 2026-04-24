@@ -2,6 +2,48 @@
 
 When no coverage file exists, introspect the repo to figure out how to generate one. **Prefer the repo's own script over running the test runner directly** — it will be wired up with the right config, paths, and formats.
 
+Before running anything, ask: *"No coverage file found. Want me to run tests with coverage? (This may take a few minutes.)"* Only proceed on yes. If the user declines, run the analyzer with coverage=0% and call out the limitation in the report header.
+
+## Detection signals (quick lookup)
+
+Read the repo root once. The **first match wins**; multiple can coexist in polyglot repos — handle each ecosystem separately for the files it owns.
+
+| Signal | Ecosystem | Runner |
+|---|---|---|
+| `package.json` with `scripts.coverage` or `scripts["test:coverage"]` | JS/TS | Use that script verbatim |
+| `jest.config.*` or `"jest"` key in `package.json` | JS/TS | Jest |
+| `vitest.config.*` or `vitest` in `devDependencies` | JS/TS | Vitest |
+| `nx.json` | JS/TS monorepo | Nx |
+| `karma.conf.*` or `@angular-devkit/build-angular:karma` in `angular.json` | JS/TS (Angular) | Karma |
+| `.nycrc*` or `nyc` in `package.json` | JS/TS | nyc/istanbul |
+| `pyproject.toml [tool.pytest.*]` / `[tool.coverage.*]`, or `pytest.ini` | Python | pytest + coverage.py |
+| `tox.ini` | Python | tox |
+| `pom.xml` with JaCoCo plugin | Java | Maven + JaCoCo |
+| `build.gradle*` with `jacoco` plugin | Java/Kotlin | Gradle + JaCoCo |
+| `go.mod` | Go | `go test -coverprofile=...` |
+| `Gemfile` with `rspec` / `simplecov` | Ruby | RSpec + SimpleCov |
+| `Cargo.toml` | Rust | `cargo llvm-cov` or `cargo tarpaulin` |
+| `*.csproj` with `coverlet.*` | C# | `dotnet test --collect` |
+| `composer.json` with `phpunit` | PHP | PHPUnit |
+| `Makefile` / `justfile` / `Taskfile.yml` with a `coverage` target | Any | Prefer the repo's own target |
+
+**Always prefer the repo's own coverage script** when it exists — it's the maintainer's canonical command and is likely wired into CI. Per-ecosystem commands are in the sections below.
+
+## Coverage formats the analyzer parses
+
+Auto-discovery walks `coverage/` and the repo root looking for:
+
+| Format | Typical path | Emitted by |
+|---|---|---|
+| **lcov** (`lcov.info`) | `coverage/lcov.info`, `coverage/<project>/lcov.info` | Jest, Vitest, nyc, Karma, simplecov-lcov, `cargo llvm-cov` |
+| **Cobertura XML** | `coverage.xml`, `coverage/cobertura-coverage.xml` | coverage.py, coverlet, phpunit, gocover-cobertura |
+| **JaCoCo XML** | `target/site/jacoco/jacoco.xml`, `build/reports/jacoco/test/jacocoTestReport.xml` | Maven, Gradle (Java/Kotlin) |
+| **Clover XML** | `coverage.xml`, `clover.xml` | PHPUnit, nyc |
+| **Go coverage** | `coverage.out` | `go test -coverprofile=...` |
+| **coverage.py JSON** | `coverage.json` | `coverage json` |
+
+Pass `--lcov <path>` to override auto-discovery (flag name is historical — it accepts any supported format).
+
 ## The golden order
 
 1. **Read the project's own coverage script.** If one of these exists, use it verbatim — the maintainer has already decided what "coverage" means here:
