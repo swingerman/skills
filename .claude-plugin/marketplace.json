@@ -1,0 +1,21 @@
+{
+  "name": "swingerman-skills",
+  "owner": {
+    "name": "Miklos Szanyi",
+    "url": "https://github.com/swingerman"
+  },
+  "metadata": {
+    "description": "Personal collection of Claude Code skills and plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "crap-analyzer",
+      "source": "./plugins/crap-analyzer",
+      "description": "Analyze recently-changed code for Change Risk Anti-Patterns. Multi-language (TS/JS, Python, Java, Kotlin, Go, Ruby, C#, Rust, PHP) with auto-discovered coverage toolchain.",
+      "version": "0.1.0",
+      "category": "code-quality",
+      "tags": ["testing", "coverage", "refactoring", "complexity"]
+    }
+  ]
+}
