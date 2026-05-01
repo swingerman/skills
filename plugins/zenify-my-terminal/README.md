@@ -6,8 +6,19 @@ Walks through the choices, applies the setup, and skips known macOS pitfalls (br
 
 ## Two modes
 
-- **Guided** — walks through every decision (terminal app, prompt, plugins, optional extras). Best when you want control.
-- **Fast track** — one question only ("Which terminal?"), then opinionated optimal defaults. Best when you trust the skill and want a working zenful terminal in a few minutes.
+- **Guided** — walks through every decision (terminal app, prompt, plugins, optional extras). Best when you want control or have an unusual existing setup.
+- **Fast track** — zero questions, applies the opinionated stack the skill was built around:
+  - **WezTerm** as the terminal (JetBrainsMono Nerd Font, Tokyo Night Moon)
+  - **Oh My Posh** with the `pure` theme as the prompt
+  - **zinit** with turbo-mode plugins: zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions, fzf-tab
+  - **fzf**, **zoxide**, **viddy**, **lazygit** installed
+  - omz snippets: `git`, `sudo`, `aws`, `kubectl`
+  - WezTerm bottom status bar (project + cwd), pane splits (`Cmd-D` / `Cmd-Shift-D`), pane focus (`Cmd-Opt-Arrow`)
+  - Project switcher (`Cmd-P` over `~/projects/*`) — tab-based, with auto-split shell + viddy git-status pane
+  - Lazygit pane (`Cmd-Shift-G`)
+  - Workspace nav (`Cmd-Shift-]/[/O/Q`)
+
+  Best when you trust the defaults and want a working zenful terminal in a few minutes.
 
 ## Terminal-neutral
 

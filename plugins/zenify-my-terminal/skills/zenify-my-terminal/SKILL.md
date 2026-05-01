@@ -13,22 +13,32 @@ Walk the user through setting up a fast, calm zsh + chosen-terminal + Starship/O
 
 After step 1 (inspecting state), ask the user which mode:
 
-**Guided** (default): walk through every decision in step 2. Best when the user wants control, has opinions, or has an unusual existing setup.
+**Guided** (default): walk through every decision in step 2. Best when the user wants control, has opinions about prompt or terminal, or has an unusual existing setup.
 
-**Fast track**: one question only — *"Which terminal?"* — then apply the opinionated optimal stack and skip everything else. Triggered by phrases like "fast track", "just set me up", "use the defaults", "one-shot", "quickest setup". Best when the user trusts the skill's defaults and just wants a working zenful terminal in a few minutes.
+**Fast track**: ZERO questions. Apply the exact opinionated stack the skill was built around. Triggered by phrases like "fast track", "just set me up", "use the defaults", "one-shot", "quickest setup". Best when the user trusts the skill's defaults and wants a working zenful terminal in a few minutes.
 
-If the user picks fast-track, **skip step 2's other questions** and apply this stack:
+The fast-track stack is fixed — this is the "what we set up the day this skill was born" recipe, distilled. **Don't substitute or ask preference questions.** If the user wants something different, send them to guided mode.
 
-| Decision | Fast-track default |
+| Decision | Fast-track value |
 |---|---|
-| Prompt | Starship + bundled `pure` preset |
-| Plugin manager | zinit (turbo mode) |
+| Terminal | **WezTerm** (`brew install --cask wezterm`) |
+| Font | JetBrainsMono Nerd Font |
+| Color scheme | Tokyo Night Moon |
+| Prompt | **Oh My Posh** with the bundled `pure.omp.json` theme |
+| Plugin manager | zinit (turbo mode — `wait lucid`) |
 | Big three | zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions |
 | Tab completion | fzf-tab |
 | Directory jumper | zoxide (replaces `autojump` if present — confirm before overwriting) |
-| omz snippets | `git`, `sudo` (skip aws/kubectl unless detected via `which aws kubectl`) |
-| WezTerm extras (only if WezTerm picked) | All of them: project switcher (tab-based), viddy git-status pane, lazygit pane, status bar, kill-workspace, workspace overview |
-| Other terminals | Use the bundled baseline config; skip features the terminal can't do natively |
+| omz snippets | `git`, `sudo`, `aws`, `kubectl` (all in — fixed) |
+| Sub-process PATH | Set in `wezterm.lua` so brew tools resolve in spawned panes |
+| Bottom status bar | Project name (active tab title) on left + cwd on right |
+| Pane splits | `Cmd-D` / `Cmd-Shift-D` ; `Cmd-Opt-Arrow` to focus |
+| Pane close | `Cmd-Shift-W` (Cmd-W still closes the whole tab, with confirm) |
+| Project switcher | `Cmd-P` — fuzzy over `~/projects/*`, **tab-based** (not workspaces). Each project = a tab with shell + viddy split. |
+| Live git status | `Cmd-G` — viddy pane on right (25%) |
+| Lazygit | `Cmd-Shift-G` — pane below (50%) |
+| Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
+| Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
 | Verification | Run all checks in step 7 |
 | Summary | Print the cheat-sheet from step 9 |
 
@@ -37,13 +47,10 @@ Fast-track still requires:
 - The `.zshrc` backup (step 4) — never skip this
 - The verification (step 7) — never claim success without proof
 - The post-setup summary (step 9) — the user needs to know what they got
+- The `brew install` of `wezterm` cask (Gatekeeper prompt on first launch)
+- The `brew install` of `viddy` and `lazygit` (without these, `Cmd-G` and `Cmd-Shift-G` won't work)
 
-Fast-track skips:
-- All the "do you want X?" questions in step 2 (other than terminal choice)
-- The Tabs-vs-Workspaces sub-question (always tabs)
-- Asking about each individual omz snippet (defaults applied)
-
-If anything fails during fast-track (a brew install errors out, a syntax check fails, the verification doesn't pass), **drop into guided mode at that decision point** — don't keep barreling through silently.
+If anything fails during fast-track (a brew install errors out, a syntax check fails, the verification doesn't pass), **stop and drop into guided mode at that decision point** — don't keep barreling through silently. If the user already has a different terminal/prompt installed and configured, ask whether to overwrite or use guided mode instead.
 
 ## Workflow
 
@@ -98,18 +105,18 @@ brew install --cask font-jetbrains-mono-nerd-font
 Prompt:
 ```sh
 brew install starship          # OR
-brew install oh-my-posh
+brew install oh-my-posh        # ← fast-track uses this
 ```
 
 Terminal — install only the chosen one (if it isn't Apple Terminal, which is built-in):
 ```sh
-brew install --cask wezterm    # or ghostty / alacritty / kitty / iterm2
+brew install --cask wezterm    # ← fast-track uses this; or ghostty / alacritty / kitty / iterm2
 ```
 
-Power-user extras (only if opted in):
+Power-user extras (only if opted in or in fast-track):
 ```sh
-brew install viddy lazygit     # for git-status pane + diff viewer
-brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal)
+brew install viddy lazygit     # for git-status pane + diff viewer (fast-track requires both)
+brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal only)
 ```
 
 Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.
