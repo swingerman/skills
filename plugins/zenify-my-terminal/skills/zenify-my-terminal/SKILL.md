@@ -40,6 +40,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
 | Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `rainbow` to match the OMP rainbow prompt). Other themes: `pure`, `powerline`, `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
+| Neovim + NvChad | **Not** included in fast-track — it's opt-in only since it overwrites `~/.config/nvim` and many users have an existing config. Available in guided mode (decision #7). |
 | Verification | Run all checks in step 7 |
 | Summary | Print the cheat-sheet from step 9 |
 
@@ -96,6 +97,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
 6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Four themes available** — pure (default, dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows), rainbow (bright fixed colors per segment), minimal (model · pct · branch). Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
+7. **Neovim + NvChad** (opt-in only — don't push it): modern Neovim setup with NvChad framework (file tree, fuzzy finder, LSP, treesitter, polished theme out of the box). Installs `neovim`, `ripgrep`, `fd`; clones the NvChad starter to `~/.config/nvim`; aliases `vim`/`vi` to `nvim`; sets `EDITOR=nvim`. Backs up any existing `~/.config/nvim` first. Only suggest this if the user explicitly asks for a "better vim", asks about Neovim, or otherwise indicates they want it. See [references/neovim-nvchad.md](references/neovim-nvchad.md).
 
 ### 3. Install dependencies
 
@@ -123,6 +125,7 @@ Power-user extras (only if opted in or in fast-track):
 brew install viddy lazygit     # for git-status pane + diff viewer (fast-track requires both)
 brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal only)
 brew install jq                # required by the bundled Claude Code statusline (only if Claude Code is detected)
+brew install neovim ripgrep fd # if user opted into NvChad (decision #7) — not in fast-track
 ```
 
 Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.
@@ -178,6 +181,15 @@ else
 fi
 ```
 See [references/claude-statusline.md](references/claude-statusline.md) for what each segment means, what each theme looks like, and how to customize.
+
+**Neovim + NvChad** (only if user opted in at decision #7 — never in fast-track):
+1. Back up any existing `~/.config/nvim` first (and `~/.local/share/nvim`, `~/.local/state/nvim`, `~/.cache/nvim` if present). Confirm with the user before moving them.
+2. `brew install neovim ripgrep fd`
+3. `git clone https://github.com/NvChad/starter ~/.config/nvim --depth 1`
+4. Add to `.zshrc` aliases section: `alias vim='nvim'`, `alias vi='nvim'`, `export EDITOR='nvim'`, `export VISUAL='nvim'`
+5. Tell the user to run `nvim` once — first launch auto-installs plugins (~30s), then run `:MasonInstallAll` for LSP servers.
+
+See [references/neovim-nvchad.md](references/neovim-nvchad.md) for keybindings and customization.
 
 ### 6. Apply the gotchas — see [references/gotchas.md](references/gotchas.md)
 
