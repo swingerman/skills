@@ -18,6 +18,8 @@ Walks through the choices, applies the setup, and skips known macOS pitfalls (br
   - Lazygit pane (`Cmd-Shift-G`)
   - Workspace nav (`Cmd-Shift-]/[/O/Q`)
 
+  - **Bonus**: if `~/.claude/` exists, also installs a custom Claude Code statusline (model name, color-coded context-window bar, 5h/7d rate-limit percentages, worktree+branch, effort level)
+
   Best when you trust the defaults and want a working zenful terminal in a few minutes.
 
 ## Terminal-neutral

@@ -39,6 +39,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Lazygit | `Cmd-Shift-G` — pane below (50%) |
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
+| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — bundled script shows model, context bar, rate limits, worktree, effort. See [references/claude-statusline.md](references/claude-statusline.md). |
 | Verification | Run all checks in step 7 |
 | Summary | Print the cheat-sheet from step 9 |
 
@@ -62,9 +63,10 @@ Before asking any question, check what's already there. Don't ask things you can
 echo $SHELL; which zsh; zsh --version
 ls -la ~/.zshrc ~/.zshenv ~/.zprofile ~/.p10k.zsh ~/.config/starship.toml ~/.wezterm.lua ~/.config/ghostty/config ~/.config/alacritty/alacritty.toml ~/.config/kitty/kitty.conf 2>/dev/null
 which brew && brew --version | head -1
-for t in fzf zoxide nvim eza bat starship oh-my-posh wezterm ghostty alacritty kitty viddy lazygit; do which $t 2>/dev/null; done
+for t in fzf zoxide nvim eza bat starship oh-my-posh wezterm ghostty alacritty kitty viddy lazygit jq; do which $t 2>/dev/null; done
 ls ~/Library/Fonts | grep -i nerd | head -3
 echo "TERM_PROGRAM=$TERM_PROGRAM"
+[[ -d ~/.claude ]] && echo "Claude Code: yes ($(ls ~/.claude/statusline-command.sh 2>/dev/null && echo 'has custom statusline' || echo 'no custom statusline'))" || echo "Claude Code: no"
 cat ~/.zshrc 2>/dev/null
 ```
 
@@ -93,6 +95,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - All terminals: a project switcher (some need tmux as the layer, others have it native)
    - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
+6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar (color-coded green/yellow/red), 5h+7d rate-limit percentages, worktree+branch, effort level. See [references/claude-statusline.md](references/claude-statusline.md).
 
 ### 3. Install dependencies
 
@@ -119,6 +122,7 @@ Power-user extras (only if opted in or in fast-track):
 ```sh
 brew install viddy lazygit     # for git-status pane + diff viewer (fast-track requires both)
 brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal only)
+brew install jq                # required by the bundled Claude Code statusline (only if Claude Code is detected)
 ```
 
 Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.
@@ -154,6 +158,24 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
 - iTerm2 / Apple Terminal: no asset file — walk the user through the manual GUI steps in their reference
 
 **Always preserve from the existing `.zshrc`:** PATH additions for tools the user actually has installed (flutter, fnm, herd, openjdk, gcloud, bun, etc.), and any tool-specific completion sources. List them explicitly to the user before overwriting.
+
+**Claude Code statusline** (only if `~/.claude/` exists and the user opted in, or fast-track):
+```sh
+cp <skill-dir>/assets/claude/statusline-command.sh ~/.claude/statusline-command.sh
+chmod +x ~/.claude/statusline-command.sh
+```
+Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
+```sh
+tmp=$(mktemp)
+if [[ -f ~/.claude/settings.json ]]; then
+  jq '. + {statusLine: {type: "command", command: "sh ~/.claude/statusline-command.sh"}}' \
+     ~/.claude/settings.json > "$tmp" && mv "$tmp" ~/.claude/settings.json
+else
+  mkdir -p ~/.claude
+  echo '{"statusLine": {"type": "command", "command": "sh ~/.claude/statusline-command.sh"}}' > ~/.claude/settings.json
+fi
+```
+See [references/claude-statusline.md](references/claude-statusline.md) for what each segment means and how to customize.
 
 ### 6. Apply the gotchas — see [references/gotchas.md](references/gotchas.md)
 

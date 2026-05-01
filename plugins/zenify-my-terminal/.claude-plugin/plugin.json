@@ -1,7 +1,7 @@
 {
   "name": "zenify-my-terminal",
-  "version": "0.3.0",
-  "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through choices: terminal between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (zero questions, applies the opinionated stack: WezTerm + Oh My Posh `pure` theme + zinit turbo + git/sudo/aws/kubectl snippets + project switcher Cmd-P over ~/projects + viddy git-status pane Cmd-G + lazygit pane Cmd-Shift-G + bottom status bar). Writes ~/.zshrc + chosen prompt config + chosen terminal config with macOS gotchas already handled (skip `brew shellenv`, dead `homebrew/command-not-found` tap, BSD ls, sub-process PATH, zinit turbo mode). Ends with a cheat-sheet of what was installed and the most important keyboard shortcuts.",
+  "version": "0.4.0",
+  "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through choices: terminal between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh with live theme preview script, plugins, optional extras) or fast-track (zero questions, applies the opinionated stack: WezTerm + Oh My Posh + zinit turbo + git/sudo/aws/kubectl snippets + project switcher over ~/projects + viddy + lazygit + status bar). When Claude Code is detected (`~/.claude/` exists), also installs a custom statusline showing model, context bar, rate limits, worktree, and effort level. Writes configs with macOS gotchas already handled. Ends with a keyboard-shortcuts cheat-sheet.",
   "author": {
     "name": "Miklos Szanyi",
     "url": "https://github.com/swingerman"

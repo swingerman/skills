@@ -20,8 +20,8 @@
     {
       "name": "zenify-my-terminal",
       "source": "./plugins/zenify-my-terminal",
-      "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through every choice between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, Starship/Oh My Posh, plugins, optional extras) or fast-track (zero questions, applies the opinionated stack: WezTerm + Oh My Posh `pure` + zinit turbo + git/sudo/aws/kubectl + project switcher over ~/projects + viddy + lazygit + status bar). Writes configs with macOS gotchas already handled. Ends with a keyboard-shortcuts cheat-sheet.",
-      "version": "0.3.0",
+      "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through every choice between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, Starship/Oh My Posh with live theme preview, plugins, optional extras) or fast-track (zero questions, opinionated stack: WezTerm + Oh My Posh + zinit turbo + git/sudo/aws/kubectl + project switcher over ~/projects + viddy + lazygit + status bar). Auto-installs a custom Claude Code statusline (model + context bar + rate limits + worktree + effort) when ~/.claude/ is detected. Writes configs with macOS gotchas already handled. Ends with a keyboard-shortcuts cheat-sheet.",
+      "version": "0.4.0",
       "category": "developer-experience",
       "tags": ["terminal", "zsh", "wezterm", "ghostty", "alacritty", "kitty", "iterm2", "starship", "oh-my-posh", "zinit", "macos", "shell"]
     }
