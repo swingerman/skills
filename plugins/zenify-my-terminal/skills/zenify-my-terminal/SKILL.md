@@ -84,7 +84,9 @@ Don't dump all questions at once. Walk through these in order. Present terminals
 
    Briefly state the trade-offs and let the user pick. **Don't anchor to a recommendation.**
 
-2. **Prompt** — Starship (actively maintained, simpler config, slightly faster) / Oh My Posh (more themes, ~1s slower startup) / Powerlevel10k (in maintenance mode since 2024 — usable but not actively developed).
+2. **Prompt** — Starship (actively maintained, simpler config, slightly faster) / Oh My Posh (125 themes including P10K-style ports, ~1s slower startup) / Powerlevel10k (in maintenance mode since 2024 — usable but not actively developed). See [references/prompts.md](references/prompts.md) for full comparison.
+
+   **If the user picks Oh My Posh, offer to preview themes live**: run `bash <skill-dir>/scripts/preview-themes.sh` — renders a curated set of ~15 themes (including the four `powerlevel10k_*` ports) to the terminal so the user can pick by sight. Variants: `--p10k` for just the P10K-style ports, `--all` for all 125 themes, or pass theme names to preview specific ones. Then set the chosen theme's path in the `oh-my-posh init` line.
 3. **Replace `autojump`?** If they have it, default to **yes** — replace with zoxide. zoxide is faster and actively developed.
 4. **omz snippets** — common opt-ins: `git`, `sudo`, `aws`, `kubectl`. **Always skip `command-not-found`** — the tap is dead.
 5. **Power-user extras** — opt-in (terminal-dependent — see the chosen terminal's reference for what's available):
@@ -259,6 +261,23 @@ For Alacritty / Apple Terminal: "Use tmux for tabs/splits — see <terminal>.md 
 ```
 
 Build the table from the actual decisions the user made — don't list options they declined.
+
+## Helping users explore Oh My Posh themes
+
+If the user picked Oh My Posh and wants to change theme later (or in-skill, before settling on one), offer the preview script:
+
+```sh
+bash <skill-dir>/scripts/preview-themes.sh        # curated representative set
+bash <skill-dir>/scripts/preview-themes.sh --p10k # only the powerlevel10k_* ports
+bash <skill-dir>/scripts/preview-themes.sh --all  # all 125 themes (long output)
+bash <skill-dir>/scripts/preview-themes.sh atomic montys catppuccin
+```
+
+Each rendered theme appears with its name as a heading + the actual prompt. The user picks one by name; you update the `--config` path in the `oh-my-posh init` line of `~/.zshrc`.
+
+For users coming from Powerlevel10k who want a familiar look, suggest `powerlevel10k_lean` (closest to Pure) or `powerlevel10k_rainbow` (the most colorful P10K style).
+
+For deeper customization (custom segments, color tweaks, dropping the time module, transient prompts), see [references/prompts.md](references/prompts.md).
 
 ## What NOT to do
 
