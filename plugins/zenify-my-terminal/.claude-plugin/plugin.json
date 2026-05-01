@@ -1,0 +1,13 @@
+{
+  "name": "zenify-my-terminal",
+  "version": "0.1.0",
+  "description": "Set up a fast, calm, focused terminal on macOS: WezTerm + zinit-managed zsh plugins + Starship or Oh My Posh prompt. Walks through the choices (terminal app, prompt, plugins, optional WezTerm goodies like project switcher and lazygit), applies the setup with macOS-specific gotchas already handled (skips brew shellenv, deprecated command-not-found tap, BSD vs GNU ls, PATH for spawned subprocesses, zinit turbo mode).",
+  "author": {
+    "name": "Miklos Szanyi",
+    "url": "https://github.com/swingerman"
+  },
+  "homepage": "https://github.com/swingerman/skills/tree/main/plugins/zenify-my-terminal",
+  "repository": "https://github.com/swingerman/skills",
+  "license": "MIT",
+  "keywords": ["terminal", "zsh", "wezterm", "starship", "oh-my-posh", "zinit", "macos", "shell"]
+}
