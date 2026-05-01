@@ -122,67 +122,11 @@ Deprecated and removed. The `OMZP::command-not-found` snippet is unusable on mac
 
 Maintainer stepped away in 2024. It still works but isn't actively developed. **Starship** or **Oh My Posh** are the actively-maintained alternatives.
 
-## WezTerm gotchas
+## Terminal-specific gotchas
 
-### Subprocesses spawned by WezTerm get a minimal PATH
+Each terminal has its own quirks (sub-process PATH, font fallback, workspace semantics). See the per-terminal references in [`terminals/`](terminals/) for setup details and known-broken patterns.
 
-Default is `/usr/bin:/bin:/usr/sbin:/sbin` — no `/usr/local/bin`. So `viddy`, `lazygit`, `oh-my-posh`, etc. won't resolve in spawned panes (they DO work in your shell because the shell's PATH includes brew, but WezTerm's `command = { args = { 'viddy', ... } }` bypasses the shell).
-
-**Fix:**
-```lua
-config.set_environment_variables = {
-  PATH = '/usr/local/bin:/usr/local/sbin:/opt/homebrew/bin:/opt/homebrew/sbin:' .. (os.getenv('PATH') or ''),
-}
-```
-
-### Workspaces hide, don't close
-
-When the user switches workspaces, the previous one's tabs become invisible (still alive). Users perceive this as "lost my terminal." Mitigations:
-- Bind a workspace overview shortcut: `wezterm.action.ShowLauncherArgs { flags = 'FUZZY|WORKSPACES' }`
-- Toast on workspace change so the user sees the transition
-
-### Workspaces are global — multi-window + workspaces don't combine
-
-WezTerm's "active workspace" is a global concept, not per-window. There's only ONE active workspace at a time across the whole WezTerm process. When you switch workspaces (via `mux.set_active_workspace` OR `wezterm.action.SwitchToWorkspace` — both end up doing the same thing globally), all GUI windows attached to other workspaces become hidden.
-
-Practical implication: **don't try to use workspaces to keep multiple GUI windows independent.** The pattern "open a new window, switch its workspace to project X" looks reasonable but breaks: the new window vanishes (it was attached to the old workspace, which is now inactive) and the original window switches to project X instead.
-
-**For a per-project layout, use TABS, not workspaces.** Tabs are window-local. Each project = one tab in the current window. Cmd-1 .. Cmd-9 switches tabs. Multi-window then works because each window's tabs are independent.
-
-Project-switcher pattern using tabs:
-```lua
-{
-  key = 'p',
-  mods = 'CMD',
-  action = wezterm.action_callback(function(window, pane)
-    window:perform_action(
-      wezterm.action.InputSelector {
-        title = 'Switch to project',
-        fuzzy = true,
-        choices = project_choices(),
-        action = wezterm.action_callback(function(win, p, id, label)
-          if not id then return end
-          local mux_win = win:mux_window()
-          -- Re-activate existing tab if there is one
-          for _, tab in ipairs(mux_win:tabs()) do
-            if tab:get_title() == label then tab:activate(); return end
-          end
-          -- Otherwise create a new tab with the layout
-          local tab, main_pane, _ = mux_win:spawn_tab { cwd = id }
-          tab:set_title(label)
-          main_pane:split {
-            direction = 'Right', size = 0.25, cwd = id,
-            args = { 'viddy', '--interval', '2', '--differences', 'git', 'status', '-s' },
-          }
-        end),
-      },
-      pane
-    )
-  end),
-},
-```
-
-If you DO use workspaces (e.g. for ad-hoc isolation that the user controls manually), document the limitation clearly and stick to single-window workflows. Don't ship a project switcher that uses workspaces.
+## Other shell gotchas
 
 ### Plugin order in zsh
 

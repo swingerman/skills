@@ -1,11 +1,49 @@
 ---
 name: zenify-my-terminal
-description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "switch to wezterm", or "set up starship / oh-my-posh / zinit". Walks through decisions (terminal app, prompt, plugins, optional WezTerm extras), then writes ~/.zshrc, ~/.config/starship.toml (or oh-my-posh equivalent), and ~/.wezterm.lua — with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, set sub-process PATH for WezTerm, use zinit turbo mode for fast startup).
+description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "fast track my terminal setup", "just set me up", or "set up starship / oh-my-posh / zinit / wezterm / ghostty / alacritty / kitty". Two modes — guided (walks through choices: terminal app between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then applies opinionated optimal defaults). Writes ~/.zshrc, the chosen prompt's config, and the chosen terminal's config with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a summary of what was installed plus the most important keyboard shortcuts.
 ---
 
 # Zenify My Terminal
 
-Walk the user through setting up a fast, calm zsh + WezTerm + Starship/Oh-My-Posh + zinit-managed plugins on macOS. Don't blindly run a script — ask the decisions one at a time, apply the gotchas already learned, and verify before claiming done.
+Walk the user through setting up a fast, calm zsh + chosen-terminal + Starship/Oh-My-Posh + zinit-managed plugins on macOS. Don't blindly run a script — ask the decisions one at a time, apply the gotchas already learned, verify, and finish with a clean cheat-sheet of how to use what you built.
+
+**Stay terminal-neutral.** Don't push WezTerm or any other choice. The bundled assets cover six terminals; pick the per-terminal reference based on what the user wants.
+
+## Mode selection
+
+After step 1 (inspecting state), ask the user which mode:
+
+**Guided** (default): walk through every decision in step 2. Best when the user wants control, has opinions, or has an unusual existing setup.
+
+**Fast track**: one question only — *"Which terminal?"* — then apply the opinionated optimal stack and skip everything else. Triggered by phrases like "fast track", "just set me up", "use the defaults", "one-shot", "quickest setup". Best when the user trusts the skill's defaults and just wants a working zenful terminal in a few minutes.
+
+If the user picks fast-track, **skip step 2's other questions** and apply this stack:
+
+| Decision | Fast-track default |
+|---|---|
+| Prompt | Starship + bundled `pure` preset |
+| Plugin manager | zinit (turbo mode) |
+| Big three | zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions |
+| Tab completion | fzf-tab |
+| Directory jumper | zoxide (replaces `autojump` if present — confirm before overwriting) |
+| omz snippets | `git`, `sudo` (skip aws/kubectl unless detected via `which aws kubectl`) |
+| WezTerm extras (only if WezTerm picked) | All of them: project switcher (tab-based), viddy git-status pane, lazygit pane, status bar, kill-workspace, workspace overview |
+| Other terminals | Use the bundled baseline config; skip features the terminal can't do natively |
+| Verification | Run all checks in step 7 |
+| Summary | Print the cheat-sheet from step 9 |
+
+Fast-track still requires:
+- The current-state inspection (step 1) — never skip this
+- The `.zshrc` backup (step 4) — never skip this
+- The verification (step 7) — never claim success without proof
+- The post-setup summary (step 9) — the user needs to know what they got
+
+Fast-track skips:
+- All the "do you want X?" questions in step 2 (other than terminal choice)
+- The Tabs-vs-Workspaces sub-question (always tabs)
+- Asking about each individual omz snippet (defaults applied)
+
+If anything fails during fast-track (a brew install errors out, a syntax check fails, the verification doesn't pass), **drop into guided mode at that decision point** — don't keep barreling through silently.
 
 ## Workflow
 
@@ -15,9 +53,9 @@ Before asking any question, check what's already there. Don't ask things you can
 
 ```sh
 echo $SHELL; which zsh; zsh --version
-ls -la ~/.zshrc ~/.zshenv ~/.zprofile ~/.p10k.zsh ~/.config/starship.toml ~/.wezterm.lua 2>/dev/null
+ls -la ~/.zshrc ~/.zshenv ~/.zprofile ~/.p10k.zsh ~/.config/starship.toml ~/.wezterm.lua ~/.config/ghostty/config ~/.config/alacritty/alacritty.toml ~/.config/kitty/kitty.conf 2>/dev/null
 which brew && brew --version | head -1
-for t in fzf zoxide nvim eza bat starship oh-my-posh wezterm viddy lazygit; do which $t 2>/dev/null; done
+for t in fzf zoxide nvim eza bat starship oh-my-posh wezterm ghostty alacritty kitty viddy lazygit; do which $t 2>/dev/null; done
 ls ~/Library/Fonts | grep -i nerd | head -3
 echo "TERM_PROGRAM=$TERM_PROGRAM"
 cat ~/.zshrc 2>/dev/null
@@ -27,32 +65,54 @@ If the user already has a working `.zshrc`, **read it** before deciding what to 
 
 ### 2. Ask the decisions one at a time
 
-Don't dump all questions at once. Walk through these in order, with the recommended default highlighted.
+Don't dump all questions at once. Walk through these in order. Present terminals neutrally — each has trade-offs; let the user choose based on their priorities.
 
-1. **Terminal app** — Apple Terminal / Ghostty / Alacritty / **WezTerm** (recommended). Apple Terminal won't render Nerd Font glyphs cleanly; flag this if they want to stay on it.
-2. **Prompt** — **Starship** (recommended: actively maintained, simpler config) / Oh My Posh (more themes, ~1s slower startup) / Powerlevel10k (in maintenance mode since 2024).
+1. **Terminal app** — six real options:
+   - **WezTerm** — most powerful (Lua scripting, custom workspaces/tabs/panes, project switchers). Heavier resource use. → [terminals/wezterm.md](references/terminals/wezterm.md)
+   - **Ghostty** — fast, native macOS, simple `key = value` config, native tabs/splits, no scripting. Newer. → [terminals/ghostty.md](references/terminals/ghostty.md)
+   - **Kitty** — mature middle ground; native tabs/splits + Python "kittens" for extensibility. → [terminals/kitty.md](references/terminals/kitty.md)
+   - **Alacritty** — minimal, GPU-accelerated, no tabs/splits (pair with tmux). → [terminals/alacritty.md](references/terminals/alacritty.md)
+   - **iTerm2** — established, GUI-configured (no text config file), full-featured. → [terminals/iterm2.md](references/terminals/iterm2.md)
+   - **Apple Terminal** — built-in, limited. Glyph rendering quirks; ~1.5s session-restore overhead. → [terminals/apple-terminal.md](references/terminals/apple-terminal.md)
+
+   Briefly state the trade-offs and let the user pick. **Don't anchor to a recommendation.**
+
+2. **Prompt** — Starship (actively maintained, simpler config, slightly faster) / Oh My Posh (more themes, ~1s slower startup) / Powerlevel10k (in maintenance mode since 2024 — usable but not actively developed).
 3. **Replace `autojump`?** If they have it, default to **yes** — replace with zoxide. zoxide is faster and actively developed.
-4. **omz snippets** — default in: `git`, `sudo`. Optional: `aws`, `kubectl` (only if they use them; cost startup time). **Always skip `command-not-found`** — the tap is dead.
-5. **WezTerm extras** — opt-in: project switcher (`Cmd-P` over `~/projects/*`), viddy git-status side pane (`Cmd-G`), lazygit diff viewer (`Cmd-Shift-G`), bottom status bar (project name + cwd), kill-workspace shortcut (`Cmd-Shift-Q`). See [references/wezterm-extras.md](references/wezterm-extras.md).
-6. **Project switcher container — TABS or WORKSPACES?** (only ask if user opted into the project switcher)
-   - **Tabs (recommended, default)**: each project = one tab in the current window. Cmd-1..9 to switch. Multi-window works because tabs are window-local.
-   - **Workspaces**: each project = a named workspace. Looks tidier in single-window setups, but **breaks with multi-window**: workspaces are global in WezTerm — switching one window's workspace hides other windows attached to the previous workspace. The bundled config uses tabs by default. Only suggest workspaces if the user is sure they'll always work in a single WezTerm window. See [gotchas.md](references/gotchas.md#workspaces-are-global--multi-window--workspaces-dont-combine).
+4. **omz snippets** — common opt-ins: `git`, `sudo`, `aws`, `kubectl`. **Always skip `command-not-found`** — the tap is dead.
+5. **Power-user extras** — opt-in (terminal-dependent — see the chosen terminal's reference for what's available):
+   - All terminals: a project switcher (some need tmux as the layer, others have it native)
+   - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
+   - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
 
 ### 3. Install dependencies
 
-Detect Apple Silicon vs Intel by checking `/opt/homebrew/bin/brew` vs `/usr/local/bin/brew`. The PATH gotcha (step 6 below) cares about this.
+Detect Apple Silicon vs Intel by checking `/opt/homebrew/bin/brew` vs `/usr/local/bin/brew`.
 
+Always:
 ```sh
 brew install fzf zoxide
-brew install --cask wezterm font-jetbrains-mono-nerd-font
-# Prompt:
-brew install starship          # or:
-brew install oh-my-posh
-# WezTerm extras (only if user opted in):
-brew install viddy lazygit
+brew install --cask font-jetbrains-mono-nerd-font
 ```
 
-Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty. Skip the `OMZP::command-not-found` snippet entirely on macOS.
+Prompt:
+```sh
+brew install starship          # OR
+brew install oh-my-posh
+```
+
+Terminal — install only the chosen one (if it isn't Apple Terminal, which is built-in):
+```sh
+brew install --cask wezterm    # or ghostty / alacritty / kitty / iterm2
+```
+
+Power-user extras (only if opted in):
+```sh
+brew install viddy lazygit     # for git-status pane + diff viewer
+brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal)
+```
+
+Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.
 
 ### 4. Back up the existing `.zshrc`
 
@@ -65,17 +125,24 @@ This is the rollback path. Don't proceed past this step until the diff confirms 
 
 ### 5. Write the configs
 
-Use the bundled templates as the base, then layer in the user's preserved integrations and chosen extras:
+The zsh + prompt configs are terminal-agnostic. The terminal config comes from the per-terminal reference.
 
+**Always:**
 - `assets/zshrc.zsh` — generic `.zshrc` skeleton (zinit + plugins + tool init)
-- `assets/starship-pure.toml` — Starship pure-style preset (skip if user picked Oh My Posh)
-- `assets/wezterm-base.lua` — WezTerm base config (font, theme, PATH, tab/split/pane keys, status bar)
 
-For Oh My Posh instead of Starship: replace the `eval "$(starship init zsh)"` line in `.zshrc` with:
-```sh
-eval "$(oh-my-posh init zsh --config /usr/local/opt/oh-my-posh/themes/pure.omp.json)"
-```
-(Adjust path for Apple Silicon: `/opt/homebrew/opt/...`.)
+**Prompt** (pick one based on step 2):
+- `assets/starship-pure.toml` → `~/.config/starship.toml`
+- For Oh My Posh: in `.zshrc`, replace the `eval "$(starship init zsh)"` line with:
+  ```sh
+  eval "$(oh-my-posh init zsh --config $HOMEBREW_PREFIX/opt/oh-my-posh/themes/pure.omp.json)"
+  ```
+
+**Terminal** (pick one based on step 2):
+- WezTerm: `assets/terminals/wezterm.lua` → `~/.wezterm.lua` — see [terminals/wezterm.md](references/terminals/wezterm.md)
+- Ghostty: `assets/terminals/ghostty.config` → `~/.config/ghostty/config` — see [terminals/ghostty.md](references/terminals/ghostty.md)
+- Alacritty: `assets/terminals/alacritty.toml` → `~/.config/alacritty/alacritty.toml` — see [terminals/alacritty.md](references/terminals/alacritty.md)
+- Kitty: `assets/terminals/kitty.conf` → `~/.config/kitty/kitty.conf` — see [terminals/kitty.md](references/terminals/kitty.md)
+- iTerm2 / Apple Terminal: no asset file — walk the user through the manual GUI steps in their reference
 
 **Always preserve from the existing `.zshrc`:** PATH additions for tools the user actually has installed (flutter, fnm, herd, openjdk, gcloud, bun, etc.), and any tool-specific completion sources. List them explicitly to the user before overwriting.
 
@@ -83,13 +150,14 @@ eval "$(oh-my-posh init zsh --config /usr/local/opt/oh-my-posh/themes/pure.omp.j
 
 Critical macOS-specific issues that will eat hours if missed. Read that file before writing the configs. Summary:
 
-- **Don't use `brew shellenv`** — costs ~1.7s on every shell startup. Set HOMEBREW_PREFIX/CELLAR/REPOSITORY env vars manually instead. Brew binaries are already on PATH via `/etc/paths`.
+- **Don't use `brew shellenv`** — costs ~1.7s on every shell startup. Set HOMEBREW_PREFIX/CELLAR/REPOSITORY env vars manually instead.
 - **Use `ls -G`, not `ls --color`** — macOS ships BSD ls, not GNU.
 - **Set `LS_COLORS` with a hardcoded portable string** — coreutils isn't installed and not worth installing just for colors.
 - **Use zinit turbo mode (`wait lucid`) for plugins** — synchronous loading adds ~500ms per plugin.
 - **Defer slow third-party completions (gcloud, bun, entire CLI) via `zinit wait`** — these can each cost 1-2s synchronously.
-- **WezTerm spawns subprocesses with minimal PATH** — set `config.set_environment_variables = { PATH = '/usr/local/bin:...' }` or brew tools won't resolve in panes.
 - **Skip the deprecated `homebrew/command-not-found` tap** — it was removed.
+
+Plus terminal-specific gotchas (in the per-terminal reference): WezTerm needs an explicit sub-process PATH, Apple Terminal needs `~/.bash_sessions_disable` for fast startup, etc.
 
 ### 7. Verify before claiming done
 
@@ -116,34 +184,78 @@ for i in 1 2 3; do /bin/sh -c 'TIMEFORMAT="%R s"; time zsh -i -c exit' 2>&1 | ta
 
 Realistic targets:
 - Apple Terminal: ~2-3s (Apple's session restore is ~1.5s of that — unavoidable there)
-- WezTerm: well under 1s perceived time-to-first-prompt (turbo plugins load in background)
+- All other terminals: well under 1s perceived time-to-first-prompt with turbo plugins
 
 **If startup is over 5s, profile.** Add `zmodload zsh/zprof` at top of `.zshrc`, `zprof | head -30` at end, run `zsh -i -c true`. Then revert. Common culprits: GCloud SDK completion (2.3s), `entire` completion (1.9s), `brew shellenv` (1.7s), `bun` completion (0.7s). All can be deferred via `zinit wait` — see [references/gotchas.md](references/gotchas.md).
 
-### 8. Hand off the manual smoke test
+### 8. Manual smoke test (user opens the terminal)
 
-The user must open WezTerm themselves (Gatekeeper prompt on first launch) and verify:
-- Two-line prompt with `❯` (no missing-glyph boxes — if boxes appear, the Nerd Font isn't being picked up)
+The user must open the chosen terminal themselves (Gatekeeper prompt on first launch for any non-builtin) and verify:
+- Two-line prompt with `❯` — if boxes appear, the Nerd Font isn't being picked up
 - `cd <Tab>` opens fzf-tab with directory previews
 - `Ctrl-R` opens fuzzy fzf history search
 - Typing a command they've used before shows a grey autosuggestion; `End` accepts it
 
-Tell them the rollback path: `mv ~/.zshrc.bak.YYYYMMDD ~/.zshrc`.
+### 9. Print the post-setup summary (REQUIRED — do not skip)
 
-## Optional WezTerm extras
+End every successful run with a structured cheat-sheet. The user has just made many choices and the skill walked through many steps — they need a single anchor message that tells them what they have and how to use it.
 
-These are popular add-ons. Only add if the user asks for them or opts in during step 2. Full configs in [references/wezterm-extras.md](references/wezterm-extras.md):
+Format:
 
-- **Project switcher** (`Cmd-P`): fuzzy picker over `~/projects/*` subdirs; selecting one creates/switches to a workspace named after the project, with main shell + `viddy git status` side pane.
-- **Live git-status pane** (`Cmd-G`): splits a 25%-width right pane running `viddy --interval 2 --differences git status -s`.
-- **Lazygit pane** (`Cmd-Shift-G`): splits 50% below with full diff viewer + stage/commit/branch.
-- **Bottom status bar**: workspace name on the left, cwd on the right.
-- **Kill workspace** (`Cmd-Shift-Q`): closes every tab in the active workspace at once.
-- **Workspace overview** (`Cmd-Shift-O`): fuzzy launcher over open workspaces.
-- **Workspace-switch toast**: 3s notification when you switch workspaces ("don't lose track of your previous shell").
+```markdown
+## What you have now
+
+| Component | Choice | Where it lives |
+|---|---|---|
+| Terminal | <chosen> | <config path> |
+| Prompt | <Starship or Oh My Posh + theme> | <config path> |
+| Shell config | zsh + zinit | ~/.zshrc |
+| History/autosuggest | zsh-autosuggestions + zsh-syntax-highlighting | (auto-loaded by zinit) |
+| Tab completion | fzf-tab + zsh-completions | (auto-loaded by zinit) |
+| Directory jumper | zoxide | `z <partial>` |
+
+(plus rows for every opt-in extra they enabled)
+
+## Most important keyboard shortcuts
+
+### Shell (works in any terminal)
+| Key | Action |
+|---|---|
+| Tab | Fuzzy completion menu (fzf-tab) |
+| Ctrl-R | Fuzzy history search |
+| Ctrl-P / Ctrl-N | Prefix-matched history search (only commands starting with what's typed) |
+| → or Ctrl-F | Accept ONE character of autosuggestion |
+| Alt-F | Accept WORD of autosuggestion |
+| End or Ctrl-E | Accept WHOLE autosuggestion |
+| Ctrl-A | Jump to start of line |
+| Ctrl-W | Delete word backward |
+| Ctrl-U | Delete from cursor to start of line |
+| z <partial> | Jump to frecency-matched directory |
+
+### Terminal-specific shortcuts
+(Pull from the chosen terminal's reference. Include only the keys that are actually configured for the user — don't list features they didn't opt into.)
+
+For WezTerm with all extras: tab/pane/split/project switcher/viddy/lazygit/workspace nav/kill workspace.
+For Ghostty: tab/split/zoom.
+For Kitty: tab/split/layout.
+For Alacritty / Apple Terminal: "Use tmux for tabs/splits — see <terminal>.md for the tmux cheat-sheet".
+
+## Rollback
+
+`mv ~/.zshrc.bak.YYYYMMDD ~/.zshrc` (insert today's date) restores the previous shell config. The terminal config can be deleted (~/.wezterm.lua, ~/.config/<terminal>/...) to revert that.
+
+## What's next
+
+- Theme tweaks: see <prompt>'s docs to swap the prompt theme; see <terminal>.md for theme browsing
+- Add more plugins: `zinit light <user/repo>` then reload
+- Profile if slow: `zsh -i -c 'zmodload zsh/zprof; source ~/.zshrc; zprof' | head -30`
+```
+
+Build the table from the actual decisions the user made — don't list options they declined.
 
 ## What NOT to do
 
+- Don't push a "recommended" terminal — the choice is the user's. Be neutral.
 - Don't run `brew tap homebrew/command-not-found` — it's deprecated and empty.
 - Don't `chsh` if `$SHELL` is already `/bin/zsh` (it usually is on modern macOS).
 - Don't touch `~/.zshenv` if it exists and is root-owned — leave it alone.
@@ -151,3 +263,4 @@ These are popular add-ons. Only add if the user asks for them or opts in during 
 - Don't promise a one-shot script. The user has existing `.zshrc` integrations that will get clobbered. Walk them through, show the diff, get approval.
 - Don't enable `zsh-syntax-highlighting` before `fzf-tab` — order matters and breaks completions.
 - Don't call `compinit` more than once — collapse any duplicates from the user's existing config into a single call.
+- Don't skip the post-setup summary in step 9 — it's how the user remembers what they got.

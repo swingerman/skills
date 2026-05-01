@@ -20,10 +20,10 @@
     {
       "name": "zenify-my-terminal",
       "source": "./plugins/zenify-my-terminal",
-      "description": "Set up a fast, calm, focused terminal on macOS: WezTerm + zinit-managed zsh plugins + Starship or Oh My Posh prompt. Walks the choices, applies the setup, and skips macOS pitfalls (brew shellenv overhead, deprecated command-not-found tap, BSD ls, sub-process PATH for WezTerm, zinit turbo mode for fast startup).",
-      "version": "0.1.0",
+      "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through choices: terminal between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then opinionated defaults). Writes the configs with macOS gotchas already handled (skip brew shellenv, dead command-not-found tap, BSD ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a keyboard-shortcuts cheat-sheet.",
+      "version": "0.2.0",
       "category": "developer-experience",
-      "tags": ["terminal", "zsh", "wezterm", "starship", "oh-my-posh", "zinit", "macos", "shell"]
+      "tags": ["terminal", "zsh", "wezterm", "ghostty", "alacritty", "kitty", "iterm2", "starship", "oh-my-posh", "zinit", "macos", "shell"]
     }
   ]
 }
