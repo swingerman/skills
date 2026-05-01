@@ -1,111 +1,147 @@
 #!/bin/sh
+# Claude Code statusline — themed.
+#
+# Usage in ~/.claude/settings.json:
+#   "statusLine": { "type": "command", "command": "sh ~/.claude/statusline-command.sh [theme]" }
+#
+# Themes: pure (default), powerline, rainbow, minimal
+# Powerline looks best in a Nerd Font (uses  arrow separator).
+
 input=$(cat)
+theme="${1:-pure}"
 
-# Model name — read from per-instance JSON payload (unique per session)
-model=$(echo "$input" | jq -r '.model.display_name // .model.id // "Unknown"')
-
-# Context usage percentage
-used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
-
-# Effort level — read from settings file (not in statusline JSON payload)
+# ---------- Parse the JSON payload ----------
+model=$(echo "$input"           | jq -r '.model.display_name // .model.id // "Unknown"')
+used=$(echo "$input"            | jq -r '.context_window.used_percentage // empty')
+five_pct=$(echo "$input"        | jq -r '.rate_limits.five_hour.used_percentage // empty')
+week_pct=$(echo "$input"        | jq -r '.rate_limits.seven_day.used_percentage // empty')
+worktree_name=$(echo "$input"   | jq -r '.worktree.name // empty')
+worktree_branch=$(echo "$input" | jq -r '.worktree.branch // empty')
 effort=$(jq -r '.effortLevel // empty' ~/.claude/settings.json 2>/dev/null)
+
 case "$effort" in
-  low)    effort_label="low effort" ;;
+  low)    effort_label="low effort"    ;;
   medium) effort_label="medium effort" ;;
-  high)   effort_label="high effort" ;;
-  *)      effort_label="" ;;
+  high)   effort_label="high effort"   ;;
+  *)      effort_label=""              ;;
 esac
 
-# Worktree and branch info
-worktree_name=$(echo "$input" | jq -r '.worktree.name // empty')
-worktree_branch=$(echo "$input" | jq -r '.worktree.branch // empty')
+# ---------- Helpers ----------
+to_int() { [ -z "$1" ] && echo "" || printf "%.0f" "$1"; }
+used_int=$(to_int "$used")
+five_int=$(to_int "$five_pct")
+week_int=$(to_int "$week_pct")
 
-# Build context bar with color coding
-if [ -n "$used" ]; then
-  used_int=$(printf "%.0f" "$used")
-  bar_filled=$(( used_int / 5 ))
-  bar_empty=$(( 20 - bar_filled ))
-
-  # Color: green <=50%, yellow <=80%, red >80%
-  if [ "$used_int" -le 50 ]; then
-    bar_color="\033[32m"   # green
-  elif [ "$used_int" -le 80 ]; then
-    bar_color="\033[33m"   # yellow
-  else
-    bar_color="\033[31m"   # red
+color_fg_for_pct() {
+  pct="$1"
+  if [ "$pct" -le 50 ]; then echo "32"
+  elif [ "$pct" -le 80 ]; then echo "33"
+  else echo "31"
   fi
+}
 
+build_bar() {
+  pct="$1"
+  filled=$(( pct / 5 ))
+  empty=$(( 20 - filled ))
   bar=""
-  i=0
-  while [ $i -lt $bar_filled ]; do
-    bar="${bar}█"
-    i=$(( i + 1 ))
-  done
-  i=0
-  while [ $i -lt $bar_empty ]; do
-    bar="${bar}░"
-    i=$(( i + 1 ))
-  done
+  i=0; while [ $i -lt $filled ]; do bar="${bar}█"; i=$((i+1)); done
+  i=0; while [ $i -lt $empty  ]; do bar="${bar}░"; i=$((i+1)); done
+  printf "%s" "$bar"
+}
 
-  ctx_part="${bar_color}[${bar}] ${used_int}%\033[0m"
-else
-  ctx_part="\033[2m[░░░░░░░░░░░░░░░░░░░░] -\033[0m"
-fi
+# ---------- Themes ----------
+case "$theme" in
 
-# Rate limit percentages (Claude.ai subscription: 5-hour session and 7-day weekly)
-five_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
-week_pct=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
-
-rate_part=""
-if [ -n "$five_pct" ] || [ -n "$week_pct" ]; then
-  if [ -n "$five_pct" ]; then
-    five_int=$(printf "%.0f" "$five_pct")
-    if [ "$five_int" -le 50 ]; then
-      five_color="\033[32m"
-    elif [ "$five_int" -le 80 ]; then
-      five_color="\033[33m"
+  # PURE: dim labels, color-coded bar (green/yellow/red), percentages.
+  pure)
+    if [ -n "$used_int" ]; then
+      c=$(color_fg_for_pct "$used_int"); bar=$(build_bar "$used_int")
+      ctx="\033[${c}m[${bar}] ${used_int}%\033[0m"
     else
-      five_color="\033[31m"
+      ctx="\033[2m[░░░░░░░░░░░░░░░░░░░░] -\033[0m"
     fi
-    rate_part="\033[2m5h:\033[0m ${five_color}${five_int}%\033[0m"
-  fi
-  if [ -n "$week_pct" ]; then
-    week_int=$(printf "%.0f" "$week_pct")
-    if [ "$week_int" -le 50 ]; then
-      week_color="\033[32m"
-    elif [ "$week_int" -le 80 ]; then
-      week_color="\033[33m"
-    else
-      week_color="\033[31m"
+    rate=""
+    if [ -n "$five_int" ]; then
+      c=$(color_fg_for_pct "$five_int")
+      rate="\033[2m5h:\033[0m \033[${c}m${five_int}%\033[0m"
     fi
-    if [ -n "$rate_part" ]; then
-      rate_part="${rate_part}  \033[2m7d:\033[0m ${week_color}${week_int}%\033[0m"
-    else
-      rate_part="\033[2m7d:\033[0m ${week_color}${week_int}%\033[0m"
+    if [ -n "$week_int" ]; then
+      c=$(color_fg_for_pct "$week_int")
+      [ -n "$rate" ] && rate="${rate}  "
+      rate="${rate}\033[2m7d:\033[0m \033[${c}m${week_int}%\033[0m"
     fi
-  fi
-fi
+    out="\033[2m${model}\033[0m  ${ctx}"
+    [ -n "$rate"            ] && out="${out}  ${rate}"
+    [ -n "$worktree_name"   ] && out="${out}  \033[2mworktree:\033[0m \033[36m${worktree_name}\033[0m"
+    [ -n "$worktree_branch" ] && out="${out} \033[2m(\033[0m\033[35m${worktree_branch}\033[0m\033[2m)\033[0m"
+    [ -n "$effort_label"    ] && out="${out}  \033[2m${effort_label}\033[0m"
+    printf "%b" "$out"
+    ;;
 
-# Assemble the status line
-output="\033[2m${model}\033[0m  ${ctx_part}"
+  # POWERLINE: filled-background segments with Nerd Font  separator.
+  # bg colors used (ANSI 4x): 0=black, 4=blue, 3=yellow, 2=green, 6=cyan, 5=magenta
+  powerline)
+    sep=""
+    out=""
+    prev_bg=""
 
-# Append rate limits if available
-if [ -n "$rate_part" ]; then
-  output="${output}  ${rate_part}"
-fi
+    push_seg() {
+      bg="$1"; fg="$2"; text="$3"
+      if [ -n "$prev_bg" ]; then
+        out="${out}\033[${prev_bg};3${bg}m${sep}\033[0m"
+      fi
+      out="${out}\033[4${bg};3${fg}m ${text} \033[0m"
+      prev_bg="4${bg}"
+    }
 
-# Append worktree / branch if present
-if [ -n "$worktree_name" ] && [ -n "$worktree_branch" ]; then
-  output="${output}  \033[2mworktree:\033[0m \033[36m${worktree_name}\033[0m \033[2m(\033[0m\033[35m${worktree_branch}\033[0m\033[2m)\033[0m"
-elif [ -n "$worktree_name" ]; then
-  output="${output}  \033[2mworktree:\033[0m \033[36m${worktree_name}\033[0m"
-elif [ -n "$worktree_branch" ]; then
-  output="${output}  \033[35m${worktree_branch}\033[0m"
-fi
+    push_seg 0 7 "${model}"
+    if [ -n "$used_int" ]; then
+      push_seg 4 7 "$(build_bar "$used_int") ${used_int}%"
+    fi
+    [ -n "$five_int"        ] && push_seg 3 0 "5h ${five_int}%"
+    [ -n "$week_int"        ] && push_seg 2 0 "7d ${week_int}%"
+    [ -n "$worktree_name"   ] && push_seg 6 0 " ${worktree_name}"
+    [ -n "$worktree_branch" ] && push_seg 5 0 " ${worktree_branch}"
+    [ -n "$effort_label"    ] && push_seg 0 7 "⚡ ${effort_label}"
 
-# Append effort label if present
-if [ -n "$effort_label" ]; then
-  output="${output}  \033[2m${effort_label}\033[0m"
-fi
+    if [ -n "$prev_bg" ]; then
+      last_fg=$(echo "$prev_bg" | sed 's/^4/3/')
+      out="${out}\033[${last_fg};49m${sep}\033[0m"
+    fi
+    printf "%b" "$out"
+    ;;
 
-printf "%b" "${output}"
+  # RAINBOW: bright fixed colors per segment, no state-based coloring.
+  rainbow)
+    out="\033[38;5;203m${model}\033[0m"
+    if [ -n "$used_int" ]; then
+      bar=$(build_bar "$used_int")
+      out="${out}  \033[38;5;215m[${bar}] ${used_int}%\033[0m"
+    fi
+    [ -n "$five_int"        ] && out="${out}  \033[38;5;221m5h ${five_int}%\033[0m"
+    [ -n "$week_int"        ] && out="${out}  \033[38;5;120m7d ${week_int}%\033[0m"
+    [ -n "$worktree_name"   ] && out="${out}  \033[38;5;117m${worktree_name}\033[0m"
+    [ -n "$worktree_branch" ] && out="${out}  \033[38;5;141m${worktree_branch}\033[0m"
+    [ -n "$effort_label"    ] && out="${out}  \033[38;5;213m${effort_label}\033[0m"
+    printf "%b" "$out"
+    ;;
+
+  # MINIMAL: model · pct% · branch · effort. Single dim middle-dot separator.
+  minimal)
+    out="\033[2m${model}\033[0m"
+    if [ -n "$used_int" ]; then
+      c=$(color_fg_for_pct "$used_int")
+      out="${out} \033[2m·\033[0m \033[${c}m${used_int}%\033[0m"
+    fi
+    [ -n "$worktree_branch" ] && out="${out} \033[2m·\033[0m \033[35m${worktree_branch}\033[0m"
+    [ -n "$effort_label"    ] && out="${out} \033[2m·\033[0m \033[2m${effort_label}\033[0m"
+    printf "%b" "$out"
+    ;;
+
+  *)
+    echo "Unknown theme: $theme" >&2
+    echo "Available themes: pure, powerline, rainbow, minimal" >&2
+    exit 1
+    ;;
+esac

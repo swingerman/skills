@@ -39,7 +39,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Lazygit | `Cmd-Shift-G` — pane below (50%) |
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
-| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — bundled script shows model, context bar, rate limits, worktree, effort. See [references/claude-statusline.md](references/claude-statusline.md). |
+| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `rainbow` to match the OMP rainbow prompt). Other themes: `pure`, `powerline`, `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
 | Verification | Run all checks in step 7 |
 | Summary | Print the cheat-sheet from step 9 |
 
@@ -95,7 +95,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - All terminals: a project switcher (some need tmux as the layer, others have it native)
    - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
-6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar (color-coded green/yellow/red), 5h+7d rate-limit percentages, worktree+branch, effort level. See [references/claude-statusline.md](references/claude-statusline.md).
+6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Four themes available** — pure (default, dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows), rainbow (bright fixed colors per segment), minimal (model · pct · branch). Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
 
 ### 3. Install dependencies
 
@@ -164,18 +164,20 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
 cp <skill-dir>/assets/claude/statusline-command.sh ~/.claude/statusline-command.sh
 chmod +x ~/.claude/statusline-command.sh
 ```
-Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
+Pick a theme — in guided mode, run `bash <skill-dir>/scripts/preview-statusline-themes.sh` to show all four side-by-side and let the user choose. In fast-track, default to `rainbow`. Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
 ```sh
+THEME=rainbow   # or: pure | powerline | minimal
 tmp=$(mktemp)
 if [[ -f ~/.claude/settings.json ]]; then
-  jq '. + {statusLine: {type: "command", command: "sh ~/.claude/statusline-command.sh"}}' \
+  jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \
+     '. + {statusLine: {type: "command", command: $cmd}}' \
      ~/.claude/settings.json > "$tmp" && mv "$tmp" ~/.claude/settings.json
 else
   mkdir -p ~/.claude
-  echo '{"statusLine": {"type": "command", "command": "sh ~/.claude/statusline-command.sh"}}' > ~/.claude/settings.json
+  printf '{"statusLine": {"type": "command", "command": "sh ~/.claude/statusline-command.sh %s"}}\n' "$THEME" > ~/.claude/settings.json
 fi
 ```
-See [references/claude-statusline.md](references/claude-statusline.md) for what each segment means and how to customize.
+See [references/claude-statusline.md](references/claude-statusline.md) for what each segment means, what each theme looks like, and how to customize.
 
 ### 6. Apply the gotchas — see [references/gotchas.md](references/gotchas.md)
 

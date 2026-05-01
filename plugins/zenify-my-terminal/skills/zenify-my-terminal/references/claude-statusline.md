@@ -1,16 +1,31 @@
-# Claude Code Statusline (opt-in)
+# Claude Code Statusline (opt-in, themed)
 
-Bundled statusline that shows: **model name · context-window usage bar (green/yellow/red) · 5h and 7d rate-limit percentages · worktree name + branch · effort level**.
+Bundled statusline showing **model · context-window usage · rate limits · worktree+branch · effort level**, with **four visual themes** to pick from.
 
 Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`). Skip silently otherwise.
 
-## What it looks like
+## Themes
 
-```
-claude-opus-4-7  [████████░░░░░░░░░░░░] 40%  5h: 23%  7d: 12%  worktree: zenify (main)  high effort
+| Theme | Look |
+|---|---|
+| `pure` (default) | Dim labels, color-coded `[████░░░░] 42%` bar, percentages — like the Pure prompt port |
+| `powerline` | Filled-background segments separated by Nerd Font  arrows — like Powerlevel10k Rainbow |
+| `rainbow` | Bright fixed colors per segment, ignoring state — playful |
+| `minimal` | `model · 42% · main · high effort` — extreme reduction, no bar, no rate limits, no worktree name |
+
+`powerline` looks best in a Nerd Font (the  separator). The skill's font choice (JetBrainsMono Nerd Font) covers it.
+
+Color coding (in `pure` and `minimal`): bar / 5h / 7d go **green ≤50%**, **yellow ≤80%**, **red >80%**.
+
+## Preview themes side-by-side
+
+Run the bundled preview script — renders all four themes with sample data:
+
+```sh
+bash <skill-dir>/scripts/preview-statusline-themes.sh
 ```
 
-Color-coded: bar / 5h / 7d each go **green ≤50%**, **yellow ≤80%**, **red >80%**. Model and dim labels (`5h:`, `7d:`, `worktree:`) use ANSI dim. Worktree name is cyan, branch is magenta.
+Output is the actual rendered statusline for each theme — pick by sight.
 
 ## Install
 
@@ -21,29 +36,32 @@ chmod +x ~/.claude/statusline-command.sh
 
 # 2. Ensure jq is installed (script depends on it)
 command -v jq >/dev/null || brew install jq
-
-# 3. Wire into ~/.claude/settings.json
-#    Use the update-config skill OR edit by hand. The block to add:
-#    "statusLine": {
-#      "type": "command",
-#      "command": "sh ~/.claude/statusline-command.sh"
-#    }
 ```
 
-**Preserve existing settings.** Don't overwrite `~/.claude/settings.json` — read it, add/merge the `statusLine` key, write it back. Use `jq` for safety:
+3. **Wire into `~/.claude/settings.json`**, picking the theme by passing it as an argument to the command. Don't overwrite the file — merge with `jq` to preserve existing settings:
 
 ```sh
+THEME=pure   # or: powerline | rainbow | minimal
 tmp=$(mktemp)
-jq '. + {statusLine: {type: "command", command: "sh ~/.claude/statusline-command.sh"}}' \
-   ~/.claude/settings.json > "$tmp" && mv "$tmp" ~/.claude/settings.json
+if [[ -f ~/.claude/settings.json ]]; then
+  jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \
+     '. + {statusLine: {type: "command", command: $cmd}}' \
+     ~/.claude/settings.json > "$tmp" && mv "$tmp" ~/.claude/settings.json
+else
+  mkdir -p ~/.claude
+  printf '{"statusLine": {"type": "command", "command": "sh ~/.claude/statusline-command.sh %s"}}\n' "$THEME" > ~/.claude/settings.json
+fi
 ```
 
-If `~/.claude/settings.json` doesn't exist yet, create it:
+## Switching theme later
 
-```sh
-mkdir -p ~/.claude
-echo '{"statusLine": {"type": "command", "command": "sh ~/.claude/statusline-command.sh"}}' > ~/.claude/settings.json
+Edit `~/.claude/settings.json` and change the `<theme>` argument in the command:
+
+```json
+"statusLine": { "type": "command", "command": "sh ~/.claude/statusline-command.sh rainbow" }
 ```
+
+Then start a new Claude Code session — it picks up the new statusline immediately.
 
 ## Configuration knobs
 
