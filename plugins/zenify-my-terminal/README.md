@@ -50,6 +50,7 @@ The skill picks the right reference based on your choice and bundles a starter c
 - Case-insensitive completion + LS_COLORS
 - Optional omz snippets: git, sudo, aws, kubectl
 - Optional power-user extras (terminal-dependent): project switcher (`Cmd-P` over `~/projects/*`), viddy git-status pane, lazygit diff viewer, programmable status bar, kill-workspace shortcut
+- Optional **tmux for Claude Code agent teams** (any terminal): `~/.tmux.conf` + `claude-team` launcher + `teammateMode: "tmux"` so Claude's parallel teammates spawn as split panes. Necessary on WezTerm/Ghostty/cmux/Kitty/Alacritty — Claude Code's split-pane mode is implemented for tmux and iTerm2 only.
 
 Ends every run with a cheat-sheet of what you have and the most important keyboard shortcuts.
 
