@@ -28,6 +28,22 @@ config.set_environment_variables = {
 }
 ```
 
+### Shift+Enter (and Alt+Enter) submits in Claude Code
+
+By default WezTerm sends the same byte sequence (`\r`) for plain Enter, Shift+Enter, and Alt+Enter, so Claude Code can't distinguish them — every variant submits the prompt. This makes pasting or composing multi-line prompts painful.
+
+**Fix:** enable the Kitty keyboard protocol in `~/.wezterm.lua`:
+
+```lua
+config.enable_kitty_keyboard = true
+```
+
+WezTerm then sends a disambiguated CSI-u escape sequence for each modified key, which Claude Code recognizes natively. After saving, **open a new WINDOW (not a tab)** for the protocol negotiation to take effect — existing windows keep using the old encoding for their lifetime.
+
+Always-available fallbacks (no config needed): **Ctrl-J** sends a literal LF, and a trailing **`\` + Enter** uses Claude Code's line-continuation parser. Source: [Claude Code Terminal Configuration](https://code.claude.com/docs/en/terminal-config).
+
+This block is included in the bundled `assets/terminals/wezterm.lua`.
+
 ### Workspaces are global — multi-window + workspaces don't combine
 
 WezTerm's "active workspace" is a single, process-global value. There's no true per-window workspace mode — `mux.set_active_workspace()` AND `wezterm.action.SwitchToWorkspace { ... }` both mutate the same global. When the active workspace changes, GUI windows attached to other workspaces become hidden.

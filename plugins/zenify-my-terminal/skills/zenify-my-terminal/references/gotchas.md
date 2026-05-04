@@ -126,6 +126,21 @@ Maintainer stepped away in 2024. It still works but isn't actively developed. **
 
 Each terminal has its own quirks (sub-process PATH, font fallback, workspace semantics). See the per-terminal references in [`terminals/`](terminals/) for setup details and known-broken patterns.
 
+### Claude Code multi-line input (Shift+Enter / Alt+Enter)
+
+By default many terminals send the same byte sequence (`\r`) for plain Enter, Shift+Enter, and Alt+Enter — so Claude Code can't tell them apart and every variant submits the prompt. The fix depends on the terminal:
+
+- **WezTerm**: `config.enable_kitty_keyboard = true` in `~/.wezterm.lua`, then open a NEW window.
+- **Kitty**: enabled by default (Kitty owns the protocol).
+- **Ghostty / cmux**: support the protocol natively; no config needed.
+- **Alacritty / VS Code / Cursor / Zed**: run `/terminal-setup` inside Claude Code.
+- **iTerm2**: configure manually — Settings → Profiles → Keys → add Shift+Enter sending `\n`, OR run `/terminal-setup`.
+- **Apple Terminal**: no fix — use the always-available fallbacks below.
+
+**Always-available fallbacks** (no config needed, work everywhere): **Ctrl-J** sends a literal LF, and a trailing **`\` + Enter** uses Claude Code's line-continuation parser.
+
+Source: [Claude Code Terminal Configuration](https://code.claude.com/docs/en/terminal-config).
+
 ## Other shell gotchas
 
 ### Plugin order in zsh

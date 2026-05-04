@@ -39,6 +39,14 @@ config.window_decorations           = 'TITLE | RESIZE'
 config.send_composed_key_when_left_alt_is_pressed  = false
 config.send_composed_key_when_right_alt_is_pressed = true
 
+-- Kitty keyboard protocol: lets WezTerm distinguish Shift+Enter from plain
+-- Enter (and other modified keys). Required for multi-line input in Claude
+-- Code — without this, Shift+Enter and Alt+Enter both submit the prompt.
+-- Open a NEW WINDOW (not tab) after editing for the negotiation to take
+-- effect. Fallbacks that always work: Ctrl-J (literal LF), or trailing
+-- backslash + Enter for line continuation.
+config.enable_kitty_keyboard = true
+
 -- Bottom status bar:
 --   left  = active tab title (project name, or workspace fallback)
 --   right = current working directory (home shortened to ~)
