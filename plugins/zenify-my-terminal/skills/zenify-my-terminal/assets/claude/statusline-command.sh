@@ -4,8 +4,14 @@
 # Usage in ~/.claude/settings.json:
 #   "statusLine": { "type": "command", "command": "sh ~/.claude/statusline-command.sh [theme]" }
 #
-# Themes: pure (default), powerline, rainbow, minimal
+# Themes: pure (default), powerline, rainbow, terminal, minimal
 # Powerline looks best in a Nerd Font (uses  arrow separator).
+#
+# THEME-AWARENESS: pure, powerline, terminal, and minimal use ANSI base
+# color codes (30-37, 90-97) which the terminal renders from its active
+# palette — change your terminal theme and the statusline colors follow.
+# rainbow uses 256-color indices (\033[38;5;NNNm) which stay fixed
+# regardless of terminal theme.
 
 input=$(cat)
 theme="${1:-pure}"
@@ -127,6 +133,26 @@ case "$theme" in
     printf "%b" "$out"
     ;;
 
+  # TERMINAL: rainbow-style multi-color per segment, but uses ANSI base
+  # colors so the terminal's active theme palette (Tokyo Night, Dracula,
+  # Solarized, etc.) drives the actual hues. Same layout as rainbow.
+  # Color choices: 91=bright red (model), 93=bright yellow (context bar),
+  # 33=yellow (5h), 32=green (7d), 96=bright cyan (worktree), 95=bright
+  # magenta (branch), 35=magenta (effort).
+  terminal)
+    out="\033[91m${model}\033[0m"
+    if [ -n "$used_int" ]; then
+      bar=$(build_bar "$used_int")
+      out="${out}  \033[93m[${bar}] ${used_int}%\033[0m"
+    fi
+    [ -n "$five_int"        ] && out="${out}  \033[33m5h ${five_int}%\033[0m"
+    [ -n "$week_int"        ] && out="${out}  \033[32m7d ${week_int}%\033[0m"
+    [ -n "$worktree_name"   ] && out="${out}  \033[96m${worktree_name}\033[0m"
+    [ -n "$worktree_branch" ] && out="${out}  \033[95m${worktree_branch}\033[0m"
+    [ -n "$effort_label"    ] && out="${out}  \033[35m${effort_label}\033[0m"
+    printf "%b" "$out"
+    ;;
+
   # MINIMAL: model · pct% · branch · effort. Single dim middle-dot separator.
   minimal)
     out="\033[2m${model}\033[0m"
@@ -141,7 +167,7 @@ case "$theme" in
 
   *)
     echo "Unknown theme: $theme" >&2
-    echo "Available themes: pure, powerline, rainbow, minimal" >&2
+    echo "Available themes: pure, powerline, rainbow, terminal, minimal" >&2
     exit 1
     ;;
 esac

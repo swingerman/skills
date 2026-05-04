@@ -39,7 +39,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Lazygit | `Cmd-Shift-G` — pane below (50%) |
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
-| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `rainbow` to match the OMP rainbow prompt). Other themes: `pure`, `powerline`, `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
+| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `terminal` so the colors inherit the active terminal palette). Other themes: `pure`, `powerline`, `rainbow` (256-color, fixed), `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
 | Neovim + NvChad | **Not** included in fast-track — it's opt-in only since it overwrites `~/.config/nvim` and many users have an existing config. Available in guided mode (decision #7). |
 | tmux + agent-teams setup | **Always installed.** `brew install tmux`, bundled `~/.tmux.conf`, and a `claude-team` zsh launcher. **If `~/.claude/` exists**, also merge `teammateMode: "tmux"` into `~/.claude/settings.json` via jq so Claude's parallel teammates spawn as split panes. Same `~/.claude/` gate as the statusline. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md). |
 | Verification | Run all checks in step 7 |
@@ -101,7 +101,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - All terminals: a project switcher (some need tmux as the layer, others have it native)
    - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
-6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Four themes available** — pure (default, dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows), rainbow (bright fixed colors per segment), minimal (model · pct · branch). Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
+6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Five themes available** — pure (dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows), rainbow (256-color fixed palette per segment — does NOT follow terminal theme), terminal (multi-color per segment using ANSI base codes — inherits terminal theme palette), minimal (model · pct · branch). Default to `terminal` (theme-aware) unless the user explicitly wants the fixed-color rainbow look. Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
 7. **Neovim + NvChad** (opt-in only — don't push it): modern Neovim setup with NvChad framework (file tree, fuzzy finder, LSP, treesitter, polished theme out of the box). Installs `neovim`, `ripgrep`, `fd`; clones the NvChad starter to `~/.config/nvim`; aliases `vim`/`vi` to `nvim`; sets `EDITOR=nvim`. Backs up any existing `~/.config/nvim` first. Only suggest this if the user explicitly asks for a "better vim", asks about Neovim, or otherwise indicates they want it. See [references/neovim-nvchad.md](references/neovim-nvchad.md).
 8. **tmux for Claude Code agent teams** (in guided mode this is opt-in; in **fast-track this is always installed**): Claude's `teammateMode="tmux"` spawns parallel teammates as split panes, but only when `$TMUX` is set. Native split-pane integration exists for tmux and iTerm2 only — WezTerm/Ghostty/cmux/Kitty/Alacritty don't have it. The setup installs tmux (if missing), bundled `~/.tmux.conf` (mouse on, true color, vim-style nav, intuitive `\|`/`-` splits, minimal status bar), and a `claude-team` zsh function that ensures `$TMUX` is set before launching Claude. **If `~/.claude/` exists**, also merges `teammateMode: "tmux"` into `~/.claude/settings.json` via jq. In guided mode, only suggest the `teammateMode` merge if the user runs parallel subagents or asks about agent teams — otherwise install tmux+conf+launcher and leave `teammateMode` alone. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md).
 
@@ -180,9 +180,9 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
 cp <skill-dir>/assets/claude/statusline-command.sh ~/.claude/statusline-command.sh
 chmod +x ~/.claude/statusline-command.sh
 ```
-Pick a theme — in guided mode, run `bash <skill-dir>/scripts/preview-statusline-themes.sh` to show all four side-by-side and let the user choose. In fast-track, default to `rainbow`. Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
+Pick a theme — in guided mode, run `bash <skill-dir>/scripts/preview-statusline-themes.sh` to show all five side-by-side and let the user choose. In fast-track, default to `terminal` (so the statusline colors inherit the active terminal palette). Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
 ```sh
-THEME=rainbow   # or: pure | powerline | minimal
+THEME=terminal   # or: pure | powerline | rainbow | minimal
 tmp=$(mktemp)
 if [[ -f ~/.claude/settings.json ]]; then
   jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \
