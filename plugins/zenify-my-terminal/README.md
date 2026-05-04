@@ -24,18 +24,19 @@ Walks through the choices, applies the setup, and skips known macOS pitfalls (br
 
 ## Terminal-neutral
 
-The skill supports six terminals, each with its own per-terminal reference and (where applicable) a baseline config asset:
+The skill supports seven terminals, each with its own per-terminal reference and (where applicable) a baseline config asset:
 
 | Terminal | Strength | Tabs/splits |
 |---|---|---|
 | WezTerm | Most powerful (Lua scripting, custom workspaces) | Native + scriptable |
 | Ghostty | Fast, native macOS, simple config | Native |
+| cmux | Native macOS app on libghostty, AI-coding-agent UI (vertical tabs sidebar with branch/PR/ports/notification rings, embedded WebKit browser). Inherits Ghostty's config. | Native |
 | Kitty | Mature middle ground, Python "kittens" | Native |
 | Alacritty | Minimal, GPU, single TOML file | None — pair with tmux |
 | iTerm2 | Established, GUI-configured | Native |
 | Apple Terminal | Built-in, no install needed | Tabs only — pair with tmux for splits |
 
-The skill picks the right reference based on your choice and bundles a starter config for the four scriptable ones.
+The skill picks the right reference based on your choice and bundles a starter config for the scriptable ones (cmux uses the same config asset as Ghostty).
 
 ## What the skill sets up
 
@@ -60,4 +61,4 @@ Ends every run with a cheat-sheet of what you have and the most important keyboa
 - "I want to upgrade my terminal experience"
 - "fast track my terminal setup" / "just set me up" / "use the defaults"
 - "set up starship / oh-my-posh / zinit"
-- "switch to wezterm / ghostty / kitty / alacritty"
+- "switch to wezterm / ghostty / cmux / kitty / alacritty"

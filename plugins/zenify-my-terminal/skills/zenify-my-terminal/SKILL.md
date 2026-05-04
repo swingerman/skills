@@ -1,13 +1,13 @@
 ---
 name: zenify-my-terminal
-description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "fast track my terminal setup", "just set me up", or "set up starship / oh-my-posh / zinit / wezterm / ghostty / alacritty / kitty". Two modes — guided (walks through choices: terminal app between WezTerm/Ghostty/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then applies opinionated optimal defaults). Writes ~/.zshrc, the chosen prompt's config, and the chosen terminal's config with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a summary of what was installed plus the most important keyboard shortcuts.
+description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "fast track my terminal setup", "just set me up", or "set up starship / oh-my-posh / zinit / wezterm / ghostty / cmux / alacritty / kitty". Two modes — guided (walks through choices: terminal app between WezTerm/Ghostty/cmux/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then applies opinionated optimal defaults). Writes ~/.zshrc, the chosen prompt's config, and the chosen terminal's config with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a summary of what was installed plus the most important keyboard shortcuts.
 ---
 
 # Zenify My Terminal
 
 Walk the user through setting up a fast, calm zsh + chosen-terminal + Starship/Oh-My-Posh + zinit-managed plugins on macOS. Don't blindly run a script — ask the decisions one at a time, apply the gotchas already learned, verify, and finish with a clean cheat-sheet of how to use what you built.
 
-**Stay terminal-neutral.** Don't push WezTerm or any other choice. The bundled assets cover six terminals; pick the per-terminal reference based on what the user wants.
+**Stay terminal-neutral.** Don't push WezTerm or any other choice. The bundled assets cover seven terminals; pick the per-terminal reference based on what the user wants.
 
 ## Mode selection
 
@@ -63,6 +63,7 @@ Before asking any question, check what's already there. Don't ask things you can
 ```sh
 echo $SHELL; which zsh; zsh --version
 ls -la ~/.zshrc ~/.zshenv ~/.zprofile ~/.p10k.zsh ~/.config/starship.toml ~/.wezterm.lua ~/.config/ghostty/config ~/.config/alacritty/alacritty.toml ~/.config/kitty/kitty.conf 2>/dev/null
+ls -ld /Applications/cmux.app 2>/dev/null
 which brew && brew --version | head -1
 for t in fzf zoxide nvim eza bat starship oh-my-posh wezterm ghostty alacritty kitty viddy lazygit jq; do which $t 2>/dev/null; done
 ls ~/Library/Fonts | grep -i nerd | head -3
@@ -77,15 +78,16 @@ If the user already has a working `.zshrc`, **read it** before deciding what to 
 
 Don't dump all questions at once. Walk through these in order. Present terminals neutrally — each has trade-offs; let the user choose based on their priorities.
 
-1. **Terminal app** — six real options:
+1. **Terminal app** — seven real options:
    - **WezTerm** — most powerful (Lua scripting, custom workspaces/tabs/panes, project switchers). Heavier resource use. → [terminals/wezterm.md](references/terminals/wezterm.md)
    - **Ghostty** — fast, native macOS, simple `key = value` config, native tabs/splits, no scripting. Newer. → [terminals/ghostty.md](references/terminals/ghostty.md)
+   - **cmux** — Ghostty-engine-based macOS app tuned for AI coding agents: vertical tabs sidebar with branch/PR/ports/notification rings, embedded WebKit browser pane, socket API. Inherits `~/.config/ghostty/config` for fonts/themes/keybindings. → [terminals/cmux.md](references/terminals/cmux.md)
    - **Kitty** — mature middle ground; native tabs/splits + Python "kittens" for extensibility. → [terminals/kitty.md](references/terminals/kitty.md)
    - **Alacritty** — minimal, GPU-accelerated, no tabs/splits (pair with tmux). → [terminals/alacritty.md](references/terminals/alacritty.md)
    - **iTerm2** — established, GUI-configured (no text config file), full-featured. → [terminals/iterm2.md](references/terminals/iterm2.md)
    - **Apple Terminal** — built-in, limited. Glyph rendering quirks; ~1.5s session-restore overhead. → [terminals/apple-terminal.md](references/terminals/apple-terminal.md)
 
-   Briefly state the trade-offs and let the user pick. **Don't anchor to a recommendation.**
+   Briefly state the trade-offs and let the user pick. **Don't anchor to a recommendation.** If the user mentions AI coding agents (Claude Code, Codex, Aider) heavily and wants tooling around that workflow, cmux is purpose-built for it; if they want full scripting freedom, WezTerm; if they want minimum-friction native, Ghostty.
 
 2. **Prompt** — Starship (actively maintained, simpler config, slightly faster) / Oh My Posh (125 themes including P10K-style ports, ~1s slower startup) / Powerlevel10k (in maintenance mode since 2024 — usable but not actively developed). See [references/prompts.md](references/prompts.md) for full comparison.
 
@@ -117,7 +119,12 @@ brew install oh-my-posh        # ← fast-track uses this
 
 Terminal — install only the chosen one (if it isn't Apple Terminal, which is built-in):
 ```sh
-brew install --cask wezterm    # ← fast-track uses this; or ghostty / alacritty / kitty / iterm2
+brew install --cask wezterm                                    # ← fast-track uses this
+brew install --cask ghostty                                    # or
+brew tap manaflow-ai/cmux && brew install --cask cmux          # or — note the tap
+brew install --cask alacritty                                  # or
+brew install --cask kitty                                      # or
+brew install --cask iterm2                                     # or
 ```
 
 Power-user extras (only if opted in or in fast-track):
@@ -156,6 +163,7 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
 **Terminal** (pick one based on step 2):
 - WezTerm: `assets/terminals/wezterm.lua` → `~/.wezterm.lua` — see [terminals/wezterm.md](references/terminals/wezterm.md)
 - Ghostty: `assets/terminals/ghostty.config` → `~/.config/ghostty/config` — see [terminals/ghostty.md](references/terminals/ghostty.md)
+- cmux: same `assets/terminals/ghostty.config` → `~/.config/ghostty/config` (cmux inherits it). cmux-specific behavior is in the in-app Settings UI. → see [terminals/cmux.md](references/terminals/cmux.md)
 - Alacritty: `assets/terminals/alacritty.toml` → `~/.config/alacritty/alacritty.toml` — see [terminals/alacritty.md](references/terminals/alacritty.md)
 - Kitty: `assets/terminals/kitty.conf` → `~/.config/kitty/kitty.conf` — see [terminals/kitty.md](references/terminals/kitty.md)
 - iTerm2 / Apple Terminal: no asset file — walk the user through the manual GUI steps in their reference
