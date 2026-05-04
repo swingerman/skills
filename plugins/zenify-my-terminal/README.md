@@ -11,14 +11,15 @@ Walks through the choices, applies the setup, and skips known macOS pitfalls (br
   - **WezTerm** as the terminal (JetBrainsMono Nerd Font, Tokyo Night Moon)
   - **Oh My Posh** with the `pure` theme as the prompt
   - **zinit** with turbo-mode plugins: zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions, fzf-tab
-  - **fzf**, **zoxide**, **viddy**, **lazygit** installed
+  - **fzf**, **zoxide**, **viddy**, **lazygit**, **tmux** installed
   - omz snippets: `git`, `sudo`, `aws`, `kubectl`
   - WezTerm bottom status bar (project + cwd), pane splits (`Cmd-D` / `Cmd-Shift-D`), pane focus (`Cmd-Opt-Arrow`)
   - Project switcher (`Cmd-P` over `~/projects/*`) — tab-based, with auto-split shell + viddy git-status pane
   - Lazygit pane (`Cmd-Shift-G`)
   - Workspace nav (`Cmd-Shift-]/[/O/Q`)
+  - **tmux** + `~/.tmux.conf` + `claude-team` zsh launcher so Claude Code's agent-teams feature can spawn parallel teammates as split panes (works in any terminal once you're inside tmux)
 
-  - **Bonus**: if `~/.claude/` exists, also installs a custom Claude Code statusline (model name, color-coded context-window bar, 5h/7d rate-limit percentages, worktree+branch, effort level)
+  - **Bonus**: if `~/.claude/` exists, also installs a custom Claude Code statusline (model name, color-coded context-window bar, 5h/7d rate-limit percentages, worktree+branch, effort level) and merges `teammateMode: "tmux"` into `~/.claude/settings.json`
 
   Best when you trust the defaults and want a working zenful terminal in a few minutes.
 

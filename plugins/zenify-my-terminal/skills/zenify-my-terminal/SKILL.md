@@ -1,6 +1,6 @@
 ---
 name: zenify-my-terminal
-description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "fast track my terminal setup", "just set me up", or "set up starship / oh-my-posh / zinit / wezterm / ghostty / cmux / alacritty / kitty". Two modes — guided (walks through choices: terminal app between WezTerm/Ghostty/cmux/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then applies opinionated optimal defaults). Writes ~/.zshrc, the chosen prompt's config, and the chosen terminal's config with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a summary of what was installed plus the most important keyboard shortcuts.
+description: Set up a fast, calm, focused terminal on macOS. Use when the user asks to "zenify my terminal", "make my terminal nice/pretty/awesome", "set up zsh / shell", "upgrade my terminal experience", "fast track my terminal setup", "just set me up", or "set up starship / oh-my-posh / zinit / wezterm / ghostty / cmux / alacritty / kitty / tmux". Two modes — guided (walks through choices: terminal app between WezTerm/Ghostty/cmux/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh, plugins, optional extras) or fast-track (one question — which terminal — then applies opinionated optimal defaults including tmux + a `claude-team` launcher so Claude Code agent-teams can spawn as visible split panes in any terminal). Writes ~/.zshrc, the chosen prompt's config, and the chosen terminal's config with macOS-specific gotchas already handled (skip `brew shellenv`, skip the deprecated `homebrew/command-not-found` tap, BSD ls vs GNU ls, sub-process PATH, zinit turbo mode for fast startup). Ends with a summary of what was installed plus the most important keyboard shortcuts.
 ---
 
 # Zenify My Terminal
@@ -41,7 +41,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
 | Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `rainbow` to match the OMP rainbow prompt). Other themes: `pure`, `powerline`, `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
 | Neovim + NvChad | **Not** included in fast-track — it's opt-in only since it overwrites `~/.config/nvim` and many users have an existing config. Available in guided mode (decision #7). |
-| tmux for Claude agent teams | **Not** included in fast-track — only relevant if the user runs Claude Code parallel subagents and wants split-pane visibility. Available in guided mode (decision #8). |
+| tmux + agent-teams setup | **Always installed.** `brew install tmux`, bundled `~/.tmux.conf`, and a `claude-team` zsh launcher. **If `~/.claude/` exists**, also merge `teammateMode: "tmux"` into `~/.claude/settings.json` via jq so Claude's parallel teammates spawn as split panes. Same `~/.claude/` gate as the statusline. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md). |
 | Verification | Run all checks in step 7 |
 | Summary | Print the cheat-sheet from step 9 |
 
@@ -52,6 +52,8 @@ Fast-track still requires:
 - The post-setup summary (step 9) — the user needs to know what they got
 - The `brew install` of `wezterm` cask (Gatekeeper prompt on first launch)
 - The `brew install` of `viddy` and `lazygit` (without these, `Cmd-G` and `Cmd-Shift-G` won't work)
+- The `brew install` of `tmux` (without it, the `claude-team` launcher and agent-teams split-pane mode can't work)
+- If `~/.claude/` exists: backing up `~/.claude/settings.json` before merging `teammateMode`. **The Claude Code agent may guard self-edits to its own settings.json** — if the merge gets blocked, surface the exact `jq` command and ask the user to run it themselves; do not silently skip.
 
 If anything fails during fast-track (a brew install errors out, a syntax check fails, the verification doesn't pass), **stop and drop into guided mode at that decision point** — don't keep barreling through silently. If the user already has a different terminal/prompt installed and configured, ask whether to overwrite or use guided mode instead.
 
@@ -101,7 +103,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
 6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Four themes available** — pure (default, dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows), rainbow (bright fixed colors per segment), minimal (model · pct · branch). Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
 7. **Neovim + NvChad** (opt-in only — don't push it): modern Neovim setup with NvChad framework (file tree, fuzzy finder, LSP, treesitter, polished theme out of the box). Installs `neovim`, `ripgrep`, `fd`; clones the NvChad starter to `~/.config/nvim`; aliases `vim`/`vi` to `nvim`; sets `EDITOR=nvim`. Backs up any existing `~/.config/nvim` first. Only suggest this if the user explicitly asks for a "better vim", asks about Neovim, or otherwise indicates they want it. See [references/neovim-nvchad.md](references/neovim-nvchad.md).
-8. **tmux for Claude Code agent teams** (opt-in — only if user runs parallel subagents or asked about agent teams): Claude's `teammateMode="tmux"` spawns parallel teammates as split panes, but only when `$TMUX` is set. Native split-pane integration exists for tmux and iTerm2 only — WezTerm/Ghostty/cmux/Kitty/Alacritty don't have it. The opt-in installs tmux (if missing), bundled `~/.tmux.conf` (mouse on, true color, vim-style nav, intuitive `\|`/`-` splits, minimal status bar), a `claude-team` zsh function that ensures `$TMUX` is set before launching Claude, and merges `teammateMode: "tmux"` into `~/.claude/settings.json` via jq. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md).
+8. **tmux for Claude Code agent teams** (in guided mode this is opt-in; in **fast-track this is always installed**): Claude's `teammateMode="tmux"` spawns parallel teammates as split panes, but only when `$TMUX` is set. Native split-pane integration exists for tmux and iTerm2 only — WezTerm/Ghostty/cmux/Kitty/Alacritty don't have it. The setup installs tmux (if missing), bundled `~/.tmux.conf` (mouse on, true color, vim-style nav, intuitive `\|`/`-` splits, minimal status bar), and a `claude-team` zsh function that ensures `$TMUX` is set before launching Claude. **If `~/.claude/` exists**, also merges `teammateMode: "tmux"` into `~/.claude/settings.json` via jq. In guided mode, only suggest the `teammateMode` merge if the user runs parallel subagents or asks about agent teams — otherwise install tmux+conf+launcher and leave `teammateMode` alone. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md).
 
 ### 3. Install dependencies
 
@@ -135,7 +137,7 @@ brew install viddy lazygit     # for git-status pane + diff viewer (fast-track r
 brew install tmux              # if terminal needs it for splits (Alacritty / Apple Terminal only)
 brew install jq                # required by the bundled Claude Code statusline (only if Claude Code is detected)
 brew install neovim ripgrep fd # if user opted into NvChad (decision #7) — not in fast-track
-brew install tmux              # if user opted into agent-teams tmux setup (decision #8) — not in fast-track
+brew install tmux              # always in fast-track; in guided mode only if user opted in at decision #8
 ```
 
 Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.
@@ -202,12 +204,12 @@ See [references/claude-statusline.md](references/claude-statusline.md) for what 
 
 See [references/neovim-nvchad.md](references/neovim-nvchad.md) for keybindings and customization.
 
-**tmux for Claude Code agent teams** (only if user opted in at decision #8 — never in fast-track):
+**tmux for Claude Code agent teams** (always in fast-track; in guided mode only if user opted in at decision #8):
 1. Back up any existing `~/.tmux.conf`: `[[ -f ~/.tmux.conf ]] && cp ~/.tmux.conf ~/.tmux.conf.bak.$(date +%Y%m%d_%H%M%S)`
 2. `brew install tmux` (skip if installed)
 3. Copy `assets/tmux.conf` → `~/.tmux.conf`
 4. Add the `claude-team` shell function from [references/agent-teams-tmux.md](references/agent-teams-tmux.md) to the aliases section of `.zshrc`
-5. Merge `teammateMode: "tmux"` into `~/.claude/settings.json` with jq (don't overwrite); confirm with the user before touching settings.json — Claude Code may guard self-edits to its config.
+5. **Only if `~/.claude/` exists**: merge `teammateMode: "tmux"` into `~/.claude/settings.json` with jq (don't overwrite). Same `~/.claude/` gate as the Claude statusline. **Heads-up**: Claude Code's permission system may block its own agent from editing `~/.claude/settings.json`. If the jq command is blocked, surface the exact command (with the user's existing settings preserved by the jq merge) and ask the user to run it themselves — don't silently skip the step.
 
 See [references/agent-teams-tmux.md](references/agent-teams-tmux.md) for keybindings and the rollback path.
 

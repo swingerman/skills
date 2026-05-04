@@ -1,18 +1,13 @@
-# Claude Code agent-teams + tmux (opt-in)
+# Claude Code agent-teams + tmux
 
 Claude Code's **Agent Teams** feature spawns parallel teammate runs as separate panes. The split-pane UI is implemented for **tmux** and **iTerm2 only** — WezTerm, Ghostty, cmux, Kitty, Alacritty have no native integration. ([Source](https://code.claude.com/docs/en/agent-teams))
 
 The cleanest fix for *any* terminal is to run Claude inside tmux. Claude detects `$TMUX` and uses `tmux split-window` automatically. The user keeps their preferred terminal emulator and gains visible parallel teammate panes.
 
-This step is **opt-in** — only suggest it if the user runs parallel subagents, asked about agent teams, or mentioned wanting visible side-by-side teammate output.
+## When this is installed
 
-## When to suggest it
-
-- User said "agent teams", "parallel subagents", "see what each agent is doing"
-- User is on WezTerm, Ghostty, cmux, Kitty, Alacritty (no native split-pane integration)
-- User explicitly asked about tmux integration with Claude Code
-
-Don't push it if the user is on iTerm2 (which has its own native integration via the `it2` CLI + iTerm2 Python API) and isn't asking about tmux.
+- **Fast-track**: always installed (tmux + `~/.tmux.conf` + `claude-team` launcher). The `teammateMode` merge into `~/.claude/settings.json` happens **only if `~/.claude/` exists** — same gate as the Claude statusline.
+- **Guided mode** (decision #8): opt-in. Suggest it when the user mentions agent teams / parallel subagents / wanting side-by-side teammate output, or when they're on a terminal without native iTerm2-style integration. Don't push it on iTerm2 users — iTerm2 has its own native integration via the `it2` CLI.
 
 ## What gets installed and configured
 
