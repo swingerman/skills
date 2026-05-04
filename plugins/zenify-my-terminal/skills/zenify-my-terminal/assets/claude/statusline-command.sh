@@ -135,21 +135,40 @@ case "$theme" in
 
   # TERMINAL: rainbow-style multi-color per segment, but uses ANSI base
   # colors so the terminal's active theme palette (Tokyo Night, Dracula,
-  # Solarized, etc.) drives the actual hues. Same layout as rainbow.
+  # Solarized, etc.) drives the actual hues. COMPACT layout — fits in
+  # 80-col terminals where the wider rainbow theme would get truncated by
+  # Claude Code.
+  #   - Model name: parenthetical info stripped (e.g. "Opus 4.7" not
+  #     "Opus 4.7 (1M context)")
+  #   - Bar: 12 chars (build_bar emits 20; we slice in this theme only)
+  #   - Effort: "⚡h" / "⚡m" / "⚡l" / "⚡x" (single letter)
   # Color choices: 91=bright red (model), 93=bright yellow (context bar),
   # 33=yellow (5h), 32=green (7d), 96=bright cyan (worktree), 95=bright
   # magenta (branch), 35=magenta (effort).
   terminal)
-    out="\033[91m${model}\033[0m"
+    short_model=$(printf '%s' "$model" | sed 's/ *(.*)//')
+    out="\033[91m${short_model}\033[0m"
     if [ -n "$used_int" ]; then
-      bar=$(build_bar "$used_int")
-      out="${out}  \033[93m[${bar}] ${used_int}%\033[0m"
+      filled=$(( used_int * 12 / 100 )); empty=$(( 12 - filled ))
+      sbar=""
+      i=0; while [ $i -lt $filled ]; do sbar="${sbar}█"; i=$((i+1)); done
+      i=0; while [ $i -lt $empty  ]; do sbar="${sbar}░"; i=$((i+1)); done
+      out="${out}  \033[93m[${sbar}] ${used_int}%\033[0m"
     fi
     [ -n "$five_int"        ] && out="${out}  \033[33m5h ${five_int}%\033[0m"
     [ -n "$week_int"        ] && out="${out}  \033[32m7d ${week_int}%\033[0m"
     [ -n "$worktree_name"   ] && out="${out}  \033[96m${worktree_name}\033[0m"
     [ -n "$worktree_branch" ] && out="${out}  \033[95m${worktree_branch}\033[0m"
-    [ -n "$effort_label"    ] && out="${out}  \033[35m${effort_label}\033[0m"
+    if [ -n "$effort" ]; then
+      case "$effort" in
+        low)    e="l" ;;
+        medium) e="m" ;;
+        high)   e="h" ;;
+        xhigh)  e="x" ;;
+        *)      e="?" ;;
+      esac
+      out="${out}  \033[35m⚡${e}\033[0m"
+    fi
     printf "%b" "$out"
     ;;
 

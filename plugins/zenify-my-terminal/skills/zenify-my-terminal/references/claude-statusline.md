@@ -11,7 +11,7 @@ Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`)
 | `pure` (default) | Dim labels, color-coded `[████░░░░] 42%` bar, percentages — like the Pure prompt port | ✅ |
 | `powerline` | Filled-background segments separated by Nerd Font  arrows — like Powerlevel10k Rainbow | ✅ |
 | `rainbow` | Bright **fixed** colors per segment via 256-color palette indices — playful, but doesn't follow your terminal theme | ❌ |
-| `terminal` | Same multi-color-per-segment look as rainbow, but uses ANSI base colors — inherits your terminal's active palette (Tokyo Night, Dracula, Solarized, etc.) | ✅ |
+| `terminal` | Compact multi-color layout per segment using ANSI base colors — inherits your terminal's active palette (Tokyo Night, Dracula, Solarized, etc.). Strips parenthetical model info, uses a 12-char bar and a single-letter effort glyph (`⚡h`) so the line stays under ~75 chars and survives Claude Code's 80-col truncation. | ✅ |
 | `minimal` | `model · 42% · main · high effort` — extreme reduction, no bar, no rate limits, no worktree name | ✅ |
 
 **Theme-aware vs fixed.** Themes that use ANSI base color codes (`\033[31m`, `\033[91m`, etc.) render through the terminal's active palette — change WezTerm/Ghostty/cmux from Tokyo Night Moon to Dracula and the statusline colors swap automatically. The `rainbow` theme is the exception: it hardcodes 256-color palette indices (`\033[38;5;203m`) which stay the same across terminal themes. Use `terminal` if you want the rainbow look but want it to follow your terminal theme.
