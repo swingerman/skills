@@ -1,6 +1,6 @@
 # Claude Code Statusline (opt-in, themed)
 
-Bundled statusline showing **model · context-window usage · rate limits · worktree+branch · effort level**, with **five visual themes** to pick from.
+Bundled statusline showing **model · context-window usage · rate limits · worktree+branch · effort level**, with **six visual themes** to pick from.
 
 Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`). Skip silently otherwise.
 
@@ -12,17 +12,23 @@ Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`)
 | `powerline` | Filled-background segments separated by Nerd Font  arrows — like Powerlevel10k Rainbow | ✅ |
 | `rainbow` | Bright **fixed** colors per segment via 256-color palette indices — playful, but doesn't follow your terminal theme | ❌ |
 | `terminal` | Compact multi-color layout per segment using ANSI base colors — inherits your terminal's active palette (Tokyo Night, Dracula, Solarized, etc.). Strips parenthetical model info, uses a 12-char bar and a single-letter effort glyph (`⚡h`) so the line stays under ~75 chars and survives Claude Code's 80-col truncation. | ✅ |
+| `panels` | **Most graphical**: powerline-style filled backgrounds per segment, Nerd Font icons per segment (robot for model, chip for context, clock/calendar for rate limits, folder for worktree, branch glyph, ⚡ for effort), Nerd Font  arrow separators between segments. Uses ANSI base colors so backgrounds inherit the terminal palette. Compact (10-char bar, single-letter effort, stripped model name) — fits 80 cols. | ✅ |
 | `minimal` | `model · 42% · main · high effort` — extreme reduction, no bar, no rate limits, no worktree name | ✅ |
 
-**Theme-aware vs fixed.** Themes that use ANSI base color codes (`\033[31m`, `\033[91m`, etc.) render through the terminal's active palette — change WezTerm/Ghostty/cmux from Tokyo Night Moon to Dracula and the statusline colors swap automatically. The `rainbow` theme is the exception: it hardcodes 256-color palette indices (`\033[38;5;203m`) which stay the same across terminal themes. Use `terminal` if you want the rainbow look but want it to follow your terminal theme.
+**Theme-aware vs fixed.** Themes that use ANSI base color codes (`\033[31m`, `\033[91m`, etc.) render through the terminal's active palette — change WezTerm/Ghostty/cmux from Tokyo Night Moon to Dracula and the statusline colors swap automatically. The `rainbow` theme is the exception: it hardcodes 256-color palette indices (`\033[38;5;203m`) which stay the same across terminal themes. Use `terminal` (text-with-color-per-segment) or `panels` (filled-backgrounds-with-icons-per-segment) if you want the colorful look but want it to follow your terminal theme.
 
-`powerline` looks best in a Nerd Font (the  separator). The skill's font choice (JetBrainsMono Nerd Font) covers it.
+**Picking by visual style:**
+- *I want plain text in colors that match my terminal*: `pure`, `terminal`, `minimal`
+- *I want filled backgrounds per segment*: `panels` (compact, with icons) or `powerline` (full-width, no leading icons)
+- *I want bright fixed colors regardless of terminal theme*: `rainbow`
+
+`powerline` and `panels` look best in a Nerd Font (the  arrow separator and the per-segment icons). The skill's font choice (JetBrainsMono Nerd Font) covers it.
 
 Color coding (in `pure` and `minimal`): bar / 5h / 7d go **green ≤50%**, **yellow ≤80%**, **red >80%**.
 
 ## Preview themes side-by-side
 
-Run the bundled preview script — renders all five themes with sample data:
+Run the bundled preview script — renders all six themes with sample data:
 
 ```sh
 bash <skill-dir>/scripts/preview-statusline-themes.sh
@@ -44,7 +50,7 @@ command -v jq >/dev/null || brew install jq
 3. **Wire into `~/.claude/settings.json`**, picking the theme by passing it as an argument to the command. Don't overwrite the file — merge with `jq` to preserve existing settings:
 
 ```sh
-THEME=pure   # or: powerline | rainbow | terminal | minimal
+THEME=pure   # or: powerline | rainbow | terminal | panels | minimal
 tmp=$(mktemp)
 if [[ -f ~/.claude/settings.json ]]; then
   jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \

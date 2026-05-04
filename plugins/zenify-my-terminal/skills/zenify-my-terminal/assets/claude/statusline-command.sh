@@ -4,14 +4,17 @@
 # Usage in ~/.claude/settings.json:
 #   "statusLine": { "type": "command", "command": "sh ~/.claude/statusline-command.sh [theme]" }
 #
-# Themes: pure (default), powerline, rainbow, terminal, minimal
-# Powerline looks best in a Nerd Font (uses  arrow separator).
+# Themes: pure (default), powerline, rainbow, terminal, panels, minimal
+# powerline & panels look best in a Nerd Font (use  arrow separator).
 #
-# THEME-AWARENESS: pure, powerline, terminal, and minimal use ANSI base
-# color codes (30-37, 90-97) which the terminal renders from its active
+# THEME-AWARENESS: pure, powerline, terminal, panels, and minimal use ANSI
+# base color codes (30-37, 90-97) which the terminal renders from its active
 # palette — change your terminal theme and the statusline colors follow.
 # rainbow uses 256-color indices (\033[38;5;NNNm) which stay fixed
 # regardless of terminal theme.
+#
+# panels is the most graphical: filled backgrounds per segment with
+# Nerd Font icons, but compact enough to fit 80-col terminals.
 
 input=$(cat)
 theme="${1:-pure}"
@@ -172,6 +175,61 @@ case "$theme" in
     printf "%b" "$out"
     ;;
 
+  # PANELS: powerline-style filled backgrounds with Nerd Font separators
+  # AND per-segment icons. Uses ANSI base colors (4X bg / 3Y fg) so the
+  # terminal palette drives the actual hues. Compact enough for 80 cols.
+  # Each segment has its own background color and a leading icon.
+  panels)
+    sep=""
+    out=""
+    prev_bg=""
+
+    short_model=$(printf '%s' "$model" | sed 's/ *(.*)//')
+
+    push_seg() {
+      bg="$1"; fg="$2"; text="$3"
+      if [ -n "$prev_bg" ]; then
+        out="${out}\033[${prev_bg};3${bg}m${sep}\033[0m"
+      fi
+      out="${out}\033[4${bg};3${fg}m ${text} \033[0m"
+      prev_bg="4${bg}"
+    }
+
+    # Model — black bg, white fg, robot-ish glyph
+    push_seg 0 7 "󰚩 ${short_model}"
+
+    # Context — blue bg, white fg, 10-char compact bar
+    if [ -n "$used_int" ]; then
+      filled=$(( used_int * 10 / 100 )); empty=$(( 10 - filled ))
+      sbar=""
+      i=0; while [ $i -lt $filled ]; do sbar="${sbar}█"; i=$((i+1)); done
+      i=0; while [ $i -lt $empty  ]; do sbar="${sbar}░"; i=$((i+1)); done
+      push_seg 4 7 "󰍛 ${sbar} ${used_int}%"
+    fi
+
+    # Rate limits — yellow / green bg, black fg, clock + calendar
+    [ -n "$five_int"        ] && push_seg 3 0 " ${five_int}%"
+    [ -n "$week_int"        ] && push_seg 2 0 " ${week_int}%"
+
+    # Worktree — cyan bg, branch — magenta bg
+    [ -n "$worktree_name"   ] && push_seg 6 0 " ${worktree_name}"
+    [ -n "$worktree_branch" ] && push_seg 5 0 " ${worktree_branch}"
+
+    # Effort — black bg, single-letter glyph
+    if [ -n "$effort" ]; then
+      case "$effort" in
+        low) e="l" ;; medium) e="m" ;; high) e="h" ;; xhigh) e="x" ;; *) e="?" ;;
+      esac
+      push_seg 0 7 "⚡${e}"
+    fi
+
+    if [ -n "$prev_bg" ]; then
+      last_fg=$(echo "$prev_bg" | sed 's/^4/3/')
+      out="${out}\033[${last_fg};49m${sep}\033[0m"
+    fi
+    printf "%b" "$out"
+    ;;
+
   # MINIMAL: model · pct% · branch · effort. Single dim middle-dot separator.
   minimal)
     out="\033[2m${model}\033[0m"
@@ -186,7 +244,7 @@ case "$theme" in
 
   *)
     echo "Unknown theme: $theme" >&2
-    echo "Available themes: pure, powerline, rainbow, terminal, minimal" >&2
+    echo "Available themes: pure, powerline, rainbow, terminal, panels, minimal" >&2
     exit 1
     ;;
 esac

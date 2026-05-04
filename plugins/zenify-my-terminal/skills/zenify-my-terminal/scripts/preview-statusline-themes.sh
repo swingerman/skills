@@ -27,7 +27,7 @@ SAMPLE='{
   "worktree": {"name": "zenify-my-terminal", "branch": "main"}
 }'
 
-THEMES=(pure powerline rainbow terminal minimal)
+THEMES=(pure powerline rainbow terminal panels minimal)
 
 for t in "${THEMES[@]}"; do
   printf '\n\033[1;36m=== %s ===\033[0m\n' "$t"
@@ -39,9 +39,12 @@ echo
 echo "To switch theme, edit ~/.claude/settings.json and change the statusLine command:"
 echo '  "statusLine": { "type": "command", "command": "sh ~/.claude/statusline-command.sh <theme>" }'
 echo
-echo "Pick: pure | powerline | rainbow | terminal | minimal"
+echo "Pick: pure | powerline | rainbow | terminal | panels | minimal"
 echo
 echo "Theme-aware (inherit your terminal's color palette automatically):"
-echo "  pure, powerline, terminal, minimal"
+echo "  pure, powerline, terminal, panels, minimal"
 echo "Fixed colors (don't follow terminal theme):"
 echo "  rainbow"
+echo
+echo "Most graphical (filled backgrounds + Nerd Font icons per segment):"
+echo "  panels (compact for 80 cols), powerline (full-width)"
