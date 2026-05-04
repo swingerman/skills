@@ -175,58 +175,65 @@ case "$theme" in
     printf "%b" "$out"
     ;;
 
-  # PANELS: powerline-style filled backgrounds with Nerd Font separators
-  # AND per-segment icons. Uses ANSI base colors (4X bg / 3Y fg) so the
-  # terminal palette drives the actual hues. Compact enough for 80 cols.
-  # Each segment has its own background color and a leading icon.
+  # PANELS: filled backgrounds per segment with Nerd Font icons +  arrow
+  # separators between segments + rounded  /  caps on the first/last
+  # segment. Uses dark, low-saturation 256-color backgrounds with bright
+  # accent foreground text — readable, discrete, not "neon party". Compact
+  # for 80 cols. Trade-off: the dark bg shades are 256-color so they don't
+  # follow the terminal theme like `terminal` does — use `terminal` if
+  # palette inheritance is more important than visual chrome.
+  #
+  # Background palette (all dark, ~10-20% brightness):
+  #   235 dark gray, 17 dark blue, 58 dark olive, 22 dark green,
+  #   23 dark teal, 53 dark purple, 235 dark gray
+  # Foreground palette (light accents, contrast-checked against their bg):
+  #   251 light gray, 159 light cyan, 222 light yellow, 158 light green,
+  #   159 light cyan, 219 light pink, 251 light gray
   panels)
-    sep=""
-    out=""
-    prev_bg=""
+    arrow=""    # powerline arrow separator (transitions between bgs)
+    rcap_l=""   # rounded left cap on the first segment
+    rcap_r=""   # rounded right cap on the last segment
 
     short_model=$(printf '%s' "$model" | sed 's/ *(.*)//')
 
+    out=""
+    prev_bg=""
+
+    # Args: bg fg "content"  (bg/fg are 256-color indices)
     push_seg() {
-      bg="$1"; fg="$2"; text="$3"
-      if [ -n "$prev_bg" ]; then
-        out="${out}\033[${prev_bg};3${bg}m${sep}\033[0m"
+      bg="$1"; fg="$2"; content="$3"
+      if [ -z "$prev_bg" ]; then
+        out="${out}\033[38;5;${bg}m${rcap_l}\033[0m"
+      else
+        out="${out}\033[38;5;${prev_bg};48;5;${bg}m${arrow}\033[0m"
       fi
-      out="${out}\033[4${bg};3${fg}m ${text} \033[0m"
-      prev_bg="4${bg}"
+      out="${out}\033[48;5;${bg};38;5;${fg}m ${content} \033[0m"
+      prev_bg="$bg"
     }
 
-    # Model — black bg, white fg, robot-ish glyph
-    push_seg 0 7 "󰚩 ${short_model}"
+    push_seg 235 251 "${short_model}"
 
-    # Context — blue bg, white fg, 10-char compact bar
     if [ -n "$used_int" ]; then
       filled=$(( used_int * 10 / 100 )); empty=$(( 10 - filled ))
       sbar=""
       i=0; while [ $i -lt $filled ]; do sbar="${sbar}█"; i=$((i+1)); done
       i=0; while [ $i -lt $empty  ]; do sbar="${sbar}░"; i=$((i+1)); done
-      push_seg 4 7 "󰍛 ${sbar} ${used_int}%"
+      push_seg 17 159 "${sbar} ${used_int}%"
     fi
 
-    # Rate limits — yellow / green bg, black fg, clock + calendar
-    [ -n "$five_int"        ] && push_seg 3 0 " ${five_int}%"
-    [ -n "$week_int"        ] && push_seg 2 0 " ${week_int}%"
+    [ -n "$five_int"        ] && push_seg 58 222 " ${five_int}%"
+    [ -n "$week_int"        ] && push_seg 22 158 " ${week_int}%"
+    [ -n "$worktree_name"   ] && push_seg 23 159 " ${worktree_name}"
+    [ -n "$worktree_branch" ] && push_seg 53 219 " ${worktree_branch}"
 
-    # Worktree — cyan bg, branch — magenta bg
-    [ -n "$worktree_name"   ] && push_seg 6 0 " ${worktree_name}"
-    [ -n "$worktree_branch" ] && push_seg 5 0 " ${worktree_branch}"
-
-    # Effort — black bg, single-letter glyph
     if [ -n "$effort" ]; then
       case "$effort" in
         low) e="l" ;; medium) e="m" ;; high) e="h" ;; xhigh) e="x" ;; *) e="?" ;;
       esac
-      push_seg 0 7 "⚡${e}"
+      push_seg 235 251 "⚡${e}"
     fi
 
-    if [ -n "$prev_bg" ]; then
-      last_fg=$(echo "$prev_bg" | sed 's/^4/3/')
-      out="${out}\033[${last_fg};49m${sep}\033[0m"
-    fi
+    [ -n "$prev_bg" ] && out="${out}\033[38;5;${prev_bg}m${rcap_r}\033[0m"
     printf "%b" "$out"
     ;;
 
