@@ -23,8 +23,8 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 |---|---|
 | Terminal | **WezTerm** (`brew install --cask wezterm`) |
 | Font | JetBrainsMono Nerd Font |
-| Color scheme | Tokyo Night Moon |
-| Prompt | **Oh My Posh** with the bundled `pure.omp.json` theme |
+| Color scheme | **Catppuccin Macchiato** (WezTerm `'Catppuccin Macchiato'`, Ghostty `catppuccin-macchiato`, Kitty `Catppuccin-Macchiato.conf`, Alacritty `catppuccin_macchiato.toml`) |
+| Prompt | **Oh My Posh** with the bundled `catppuccin.omp.json` theme — rounded-pill segments (Blue user/host, Pink path, Lavender git branch). Pairs with the Macchiato terminal palette. |
 | Plugin manager | zinit (turbo mode — `wait lucid`) |
 | Big three | zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions |
 | Tab completion | fzf-tab |
@@ -39,7 +39,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Lazygit | `Cmd-Shift-G` — pane below (50%) |
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
-| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `panels` — filled backgrounds, Nerd Font icons per segment, theme-neutral, compact for 80 cols). Other themes: `pure`, `powerline` (full-width filled), `rainbow` (256-color fixed), `terminal` (text-only theme-aware), `catppuccin-mocha` (Catppuccin-branded panels), `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
+| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: **`catppuccin-macchiato`** to coordinate with the prompt and terminal palette — Surface0/Surface1 backgrounds with Sapphire/Yellow/Green/Sky/Mauve/Peach Macchiato accents, rounded caps, icons per segment). Other themes: `panels` (theme-neutral graphical), `catppuccin-mocha` (darker Catppuccin variant), `pure`, `powerline`, `rainbow`, `terminal`, `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
 | `imgpaste` shell function | **Always installed.** Workaround for Cmd+V image paste not working through tmux + WezTerm + Claude Code. Saves clipboard image to `/tmp/claude-screenshot-<ts>.png` and prints the path; user pastes the path into Claude's prompt. Uses `pngpaste` if available, falls back to `osascript`. See [references/image-paste-workaround.md](references/image-paste-workaround.md). |
 | Neovim + NvChad | **Not** included in fast-track — it's opt-in only since it overwrites `~/.config/nvim` and many users have an existing config. Available in guided mode (decision #7). |
 | tmux + agent-teams setup | **Always installed.** `brew install tmux`, bundled `~/.tmux.conf`, and a `claude-team` zsh launcher. **If `~/.claude/` exists**, also merge `teammateMode: "tmux"` into `~/.claude/settings.json` via jq so Claude's parallel teammates spawn as split panes. Same `~/.claude/` gate as the statusline. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md). |
@@ -102,7 +102,7 @@ Don't dump all questions at once. Walk through these in order. Present terminals
    - All terminals: a project switcher (some need tmux as the layer, others have it native)
    - Terminals with native splits (WezTerm, Kitty, iTerm2, Ghostty): viddy git-status side pane, lazygit diff viewer
    - WezTerm only: programmable status bar with project name, kill-workspace shortcut, workspace overview launcher
-6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Six themes available** — pure (dim labels + color-coded bar), powerline (filled segments + Nerd Font arrows, full-width), rainbow (256-color fixed palette per segment — does NOT follow terminal theme), terminal (multi-color text per segment using ANSI base codes — inherits terminal theme palette), panels (powerline-style filled backgrounds + per-segment Nerd Font icons, ANSI base colors, compact for 80 cols), minimal (model · pct · branch). Default to `panels` (most graphical, fits 80 cols, theme-aware) unless the user explicitly wants something else. Offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
+6. **Claude Code statusline** (only if `[[ -d $HOME/.claude ]]` — otherwise skip silently): bundled statusline shows model name, context-window usage bar, rate-limit percentages, worktree+branch, effort level. **Eight themes available** — pure, powerline, rainbow, terminal, panels, catppuccin-mocha, catppuccin-macchiato, minimal. Default to `catppuccin-macchiato` in fast-track to coordinate with the bundled OMP `catppuccin.omp.json` prompt and the Catppuccin Macchiato terminal palette. In guided mode, offer to preview themes side-by-side via `bash <skill-dir>/scripts/preview-statusline-themes.sh`. See [references/claude-statusline.md](references/claude-statusline.md).
 7. **Neovim + NvChad** (opt-in only — don't push it): modern Neovim setup with NvChad framework (file tree, fuzzy finder, LSP, treesitter, polished theme out of the box). Installs `neovim`, `ripgrep`, `fd`; clones the NvChad starter to `~/.config/nvim`; aliases `vim`/`vi` to `nvim`; sets `EDITOR=nvim`. Backs up any existing `~/.config/nvim` first. Only suggest this if the user explicitly asks for a "better vim", asks about Neovim, or otherwise indicates they want it. See [references/neovim-nvchad.md](references/neovim-nvchad.md).
 8. **tmux for Claude Code agent teams** (in guided mode this is opt-in; in **fast-track this is always installed**): Claude's `teammateMode="tmux"` spawns parallel teammates as split panes, but only when `$TMUX` is set. Native split-pane integration exists for tmux and iTerm2 only — WezTerm/Ghostty/cmux/Kitty/Alacritty don't have it. The setup installs tmux (if missing), bundled `~/.tmux.conf` (mouse on, true color, vim-style nav, intuitive `\|`/`-` splits, minimal status bar), and a `claude-team` zsh function that ensures `$TMUX` is set before launching Claude. **If `~/.claude/` exists**, also merges `teammateMode: "tmux"` into `~/.claude/settings.json` via jq. In guided mode, only suggest the `teammateMode` merge if the user runs parallel subagents or asks about agent teams — otherwise install tmux+conf+launcher and leave `teammateMode` alone. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md).
 
@@ -167,6 +167,8 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
   eval "$(oh-my-posh init zsh --config $HOMEBREW_PREFIX/opt/oh-my-posh/themes/pure.omp.json)"
   ```
 
+**Color scheme.** All bundled per-terminal configs default to **Catppuccin Macchiato** so the terminal palette coordinates with the OMP `catppuccin.omp.json` prompt (which uses Macchiato Blue/Pink/Lavender). To pick a different scheme, edit one line in the per-terminal config (and optionally bundle a `Catppuccin-<flavor>` theme file for Kitty / Alacritty if not switching to Macchiato).
+
 **Terminal** (pick one based on step 2):
 - WezTerm: `assets/terminals/wezterm.lua` → `~/.wezterm.lua` — see [terminals/wezterm.md](references/terminals/wezterm.md)
 - Ghostty: `assets/terminals/ghostty.config` → `~/.config/ghostty/config` — see [terminals/ghostty.md](references/terminals/ghostty.md)
@@ -182,9 +184,9 @@ The zsh + prompt configs are terminal-agnostic. The terminal config comes from t
 cp <skill-dir>/assets/claude/statusline-command.sh ~/.claude/statusline-command.sh
 chmod +x ~/.claude/statusline-command.sh
 ```
-Pick a theme — in guided mode, run `bash <skill-dir>/scripts/preview-statusline-themes.sh` to show all six side-by-side and let the user choose. In fast-track, default to `panels` (most graphical, theme-aware, fits 80 cols). Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
+Pick a theme — in guided mode, run `bash <skill-dir>/scripts/preview-statusline-themes.sh` to show all eight side-by-side and let the user choose. In fast-track, default to `catppuccin-macchiato` (coordinates with the bundled `catppuccin.omp.json` prompt and the Catppuccin Macchiato terminal palette). Then merge the `statusLine` block into `~/.claude/settings.json` (use `jq`, don't overwrite the file):
 ```sh
-THEME=panels   # or: pure | powerline | rainbow | terminal | minimal
+THEME=catppuccin-macchiato   # or: pure | powerline | rainbow | terminal | panels | catppuccin-mocha | minimal
 tmp=$(mktemp)
 if [[ -f ~/.claude/settings.json ]]; then
   jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \

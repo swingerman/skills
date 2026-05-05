@@ -3,7 +3,7 @@
 # from https://github.com/alacritty/alacritty-theme and place in ~/.config/alacritty/themes/
 
 [general]
-import = ["~/.config/alacritty/themes/tokyo_night_moon.toml"]
+import = ["~/.config/alacritty/themes/catppuccin_macchiato.toml"]
 
 [font]
 size = 14

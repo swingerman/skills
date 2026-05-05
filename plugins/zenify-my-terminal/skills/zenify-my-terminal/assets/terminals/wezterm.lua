@@ -12,7 +12,7 @@ local config = wezterm.config_builder()
 -- Tweakable knobs ------------------------------------------------------------
 local FONT_FAMILY  = 'JetBrainsMono Nerd Font'
 local FONT_SIZE    = 14
-local COLOR_SCHEME = 'Tokyo Night Moon'
+local COLOR_SCHEME = 'Catppuccin Macchiato'
 -----------------------------------------------------------------------------
 
 config.font         = wezterm.font(FONT_FAMILY)

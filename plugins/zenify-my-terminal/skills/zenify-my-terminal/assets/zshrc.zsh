@@ -87,7 +87,7 @@ alias ls='ls -G'             # macOS BSD ls; --color is GNU and won't work
 # --- Tool init --------------------------------------------------------------
 # Pick ONE prompt. Comment out the other.
 # Fast-track default = Oh My Posh + pure theme. Starship is the alternative.
-eval "$(oh-my-posh init zsh --config $HOMEBREW_PREFIX/opt/oh-my-posh/themes/pure.omp.json)"
+eval "$(oh-my-posh init zsh --config $HOMEBREW_PREFIX/opt/oh-my-posh/themes/catppuccin.omp.json)"
 # eval "$(starship init zsh)"
 
 eval "$(zoxide init zsh)"

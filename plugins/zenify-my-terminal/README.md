@@ -8,18 +8,20 @@ Walks through the choices, applies the setup, and skips known macOS pitfalls (br
 
 - **Guided** — walks through every decision (terminal app, prompt, plugins, optional extras). Best when you want control or have an unusual existing setup.
 - **Fast track** — zero questions, applies the opinionated stack the skill was built around:
-  - **WezTerm** as the terminal (JetBrainsMono Nerd Font, Tokyo Night Moon)
-  - **Oh My Posh** with the `pure` theme as the prompt
+  - **WezTerm** as the terminal (JetBrainsMono Nerd Font, **Catppuccin Macchiato** color scheme)
+  - **Oh My Posh** with the `catppuccin.omp.json` theme — rounded-pill segments (Blue user/host, Pink path, Lavender git branch) coordinated with the Macchiato terminal palette
   - **zinit** with turbo-mode plugins: zsh-syntax-highlighting, zsh-autosuggestions, zsh-completions, fzf-tab
-  - **fzf**, **zoxide**, **viddy**, **lazygit**, **tmux** installed
+  - **fzf**, **zoxide**, **viddy**, **lazygit**, **tmux**, **pngpaste** installed
   - omz snippets: `git`, `sudo`, `aws`, `kubectl`
-  - WezTerm bottom status bar (project + cwd), pane splits (`Cmd-D` / `Cmd-Shift-D`), pane focus (`Cmd-Opt-Arrow`)
+  - WezTerm bottom status bar (project | git branch | worktree | cwd), pane splits (`Cmd-D` / `Cmd-Shift-D`), pane focus (`Cmd-Opt-Arrow`)
   - Project switcher (`Cmd-P` over `~/projects/*`) — tab-based, with auto-split shell + viddy git-status pane
   - Lazygit pane (`Cmd-Shift-G`)
   - Workspace nav (`Cmd-Shift-]/[/O/Q`)
   - **tmux** + `~/.tmux.conf` + `claude-team` zsh launcher so Claude Code's agent-teams feature can spawn parallel teammates as split panes (works in any terminal once you're inside tmux)
+  - **`imgpaste`** zsh function: workaround for Cmd+V image paste not reaching Claude Code through tmux+WezTerm — saves clipboard image to `/tmp/claude-screenshot-<ts>.png` and prints the path
+  - WezTerm `enable_kitty_keyboard = true` so Shift+Enter inserts a newline in Claude Code's prompt instead of submitting
 
-  - **Bonus**: if `~/.claude/` exists, also installs a custom Claude Code statusline (model name, color-coded context-window bar, 5h/7d rate-limit percentages, worktree+branch, effort level) and merges `teammateMode: "tmux"` into `~/.claude/settings.json`
+  - **Bonus**: if `~/.claude/` exists, also installs a custom Claude Code statusline themed `catppuccin-macchiato` (Macchiato Surface backgrounds with Sapphire/Yellow/Green/Sky/Mauve/Peach accents, rounded caps, icons, fits 80 cols) and merges `teammateMode: "tmux"` into `~/.claude/settings.json`
 
   Best when you trust the defaults and want a working zenful terminal in a few minutes.
 
