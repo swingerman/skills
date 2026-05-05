@@ -48,28 +48,83 @@ config.send_composed_key_when_right_alt_is_pressed = true
 config.enable_kitty_keyboard = true
 
 -- Bottom status bar:
---   left  = active tab title (project name, or workspace fallback)
+--   left  = active tab title (project) | git branch | worktree (if linked)
 --   right = current working directory (home shortened to ~)
-wezterm.on('update-status', function(window, pane)
-  local cwd_uri = pane:get_current_working_dir()
-  local cwd = ''
-  if cwd_uri then
-    cwd = cwd_uri.file_path or ''
-    if cwd:sub(-1) == '/' and #cwd > 1 then cwd = cwd:sub(1, -2) end
-    local home = os.getenv('HOME') or ''
-    if home ~= '' and cwd:sub(1, #home) == home then
-      cwd = '~' .. cwd:sub(#home + 1)
+
+-- Git info cache (5s TTL) so we don't shell out on every status tick.
+local git_cache = {}
+
+local function git_info(cwd)
+  if not cwd or cwd == '' then return nil, nil end
+  local now = os.time()
+  local entry = git_cache[cwd]
+  if entry and (now - entry.t) < 5 then
+    return entry.branch, entry.worktree
+  end
+
+  local ok, stdout = wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', '--abbrev-ref', 'HEAD' })
+  if not ok then
+    git_cache[cwd] = { t = now, branch = nil, worktree = nil }
+    return nil, nil
+  end
+  local branch = (stdout or ''):gsub('%s+', '')
+  if branch == 'HEAD' then
+    local ok2, sha = wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', '--short', 'HEAD' })
+    if ok2 then branch = '@' .. (sha or ''):gsub('%s+', '') end
+  end
+
+  local worktree = nil
+  local _, gitdir = wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', '--git-dir' })
+  local _, common = wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', '--git-common-dir' })
+  if gitdir and common and gitdir ~= common then
+    local _, top = wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', '--show-toplevel' })
+    if top then
+      top = top:gsub('%s+', '')
+      worktree = top:match('([^/]+)$')
     end
   end
+
+  git_cache[cwd] = { t = now, branch = branch, worktree = worktree }
+  return branch, worktree
+end
+
+wezterm.on('update-status', function(window, pane)
+  local cwd_uri = pane:get_current_working_dir()
+  local raw_cwd = cwd_uri and (cwd_uri.file_path or '') or ''
+  if raw_cwd:sub(-1) == '/' and #raw_cwd > 1 then raw_cwd = raw_cwd:sub(1, -2) end
+
+  local cwd = raw_cwd
+  local home = os.getenv('HOME') or ''
+  if home ~= '' and cwd:sub(1, #home) == home then
+    cwd = '~' .. cwd:sub(#home + 1)
+  end
+
+  local branch, worktree = nil, nil
+  if raw_cwd ~= '' then branch, worktree = git_info(raw_cwd) end
 
   local active_tab = window:active_tab()
   local label = active_tab and active_tab:get_title() or ''
   if label == '' then label = window:active_workspace() end
 
-  window:set_left_status(wezterm.format {
+  local left = {
     { Foreground = { AnsiColor = 'Blue' } },
-    { Text = '  ' .. label .. '  ' },
-  })
+    { Text = '  ' .. label },
+  }
+  if branch then
+    table.insert(left, { Foreground = { AnsiColor = 'Silver' } })
+    table.insert(left, { Text = '  │  ' })
+    table.insert(left, { Foreground = { AnsiColor = 'Purple' } })
+    table.insert(left, { Text = ' ' .. branch })
+  end
+  if worktree then
+    table.insert(left, { Foreground = { AnsiColor = 'Silver' } })
+    table.insert(left, { Text = '  ' })
+    table.insert(left, { Foreground = { AnsiColor = 'Olive' } })
+    table.insert(left, { Text = ' ' .. worktree })
+  end
+  table.insert(left, { Text = '  ' })
+  window:set_left_status(wezterm.format(left))
+
   window:set_right_status(wezterm.format {
     { Foreground = { AnsiColor = 'Fuchsia' } },
     { Text = '  ' .. cwd .. '  ' },

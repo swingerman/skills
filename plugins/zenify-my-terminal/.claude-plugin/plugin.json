@@ -1,6 +1,6 @@
 {
   "name": "zenify-my-terminal",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through choices: terminal between WezTerm/Ghostty/cmux/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh with live theme preview script, plugins, optional extras) or fast-track (zero questions, applies the opinionated stack: WezTerm + Oh My Posh + zinit turbo + git/sudo/aws/kubectl snippets + project switcher over ~/projects + viddy + lazygit + status bar + tmux with a claude-team launcher so Claude Code's agent-teams spawn as visible split panes). When Claude Code is detected (`~/.claude/` exists), also installs a custom statusline (model, context bar, rate limits, worktree, effort) and merges teammateMode=tmux into settings.json. Writes configs with macOS gotchas already handled. Ends with a keyboard-shortcuts cheat-sheet.",
   "author": {
     "name": "Miklos Szanyi",

@@ -31,7 +31,7 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Directory jumper | zoxide (replaces `autojump` if present — confirm before overwriting) |
 | omz snippets | `git`, `sudo`, `aws`, `kubectl` (all in — fixed) |
 | Sub-process PATH | Set in `wezterm.lua` so brew tools resolve in spawned panes |
-| Bottom status bar | Project name (active tab title) on left + cwd on right |
+| Bottom status bar | Project name on left, then ` branch` (Purple) when in a git repo, then ` worktree-name` (Olive) when in a linked worktree, separated by `│`. cwd (home → ~) on the right in Fuchsia. Git info cached 5s. |
 | Pane splits | `Cmd-D` / `Cmd-Shift-D` ; `Cmd-Opt-Arrow` to focus |
 | Pane close | `Cmd-Shift-W` (Cmd-W still closes the whole tab, with confirm) |
 | Project switcher | `Cmd-P` — fuzzy over `~/projects/*`, **tab-based** (not workspaces). Each project = a tab with shell + viddy split. |

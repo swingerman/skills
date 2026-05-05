@@ -64,9 +64,13 @@ The bundled `wezterm.lua` includes all of these. Drop the blocks you don't want.
 - `Cmd-Opt-Arrow` — focus pane in that direction
 - `Cmd-Shift-W` — close current pane (Cmd-W still closes the whole tab)
 
-### Bottom status bar (project + cwd)
+### Bottom status bar (project + git branch + worktree + cwd)
 
-Active tab title (project name) on the left, cwd on the right. Requires `tab_bar_at_bottom = true`, `use_fancy_tab_bar = false`, `hide_tab_bar_if_only_one_tab = false`.
+Left status: active tab title (project name) — Blue. Then, if the cwd is inside a git repo: ` <branch>` in Purple, separated by a vertical bar. Then, if the cwd is in a *linked* git worktree: ` <worktree-name>` in Olive. Right status: cwd (home shortened to `~`) in Fuchsia.
+
+Requires `tab_bar_at_bottom = true`, `use_fancy_tab_bar = false`, `hide_tab_bar_if_only_one_tab = false`.
+
+The git info is fetched via `wezterm.run_child_process({ 'git', '-C', cwd, 'rev-parse', ... })` and cached per-cwd for 5 seconds to keep `update-status` cheap. Branch updates appear within ~5s of a `git checkout`. Worktree detection uses `--git-dir != --git-common-dir` to identify linked worktrees (skips main worktrees so the segment doesn't add noise on every repo).
 
 ### Live git-status side pane (viddy)
 
