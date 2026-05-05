@@ -1,6 +1,6 @@
 # Claude Code Statusline (opt-in, themed)
 
-Bundled statusline showing **model · context-window usage · rate limits · worktree+branch · effort level**, with **six visual themes** to pick from.
+Bundled statusline showing **model · context-window usage · rate limits · worktree+branch · effort level**, with **seven visual themes** to pick from.
 
 Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`). Skip silently otherwise.
 
@@ -12,7 +12,8 @@ Only relevant if the user uses Claude Code (detect via `[[ -d $HOME/.claude ]]`)
 | `powerline` | Filled-background segments separated by Nerd Font  arrows — like Powerlevel10k Rainbow | ✅ |
 | `rainbow` | Bright **fixed** colors per segment via 256-color palette indices — playful, but doesn't follow your terminal theme | ❌ |
 | `terminal` | Compact multi-color layout per segment using ANSI base colors — inherits your terminal's active palette (Tokyo Night, Dracula, Solarized, etc.). Strips parenthetical model info, uses a 12-char bar and a single-letter effort glyph (`⚡h`) so the line stays under ~75 chars and survives Claude Code's 80-col truncation. | ✅ |
-| `panels` | **Most graphical**: filled backgrounds per segment (each its own dark muted shade), Nerd Font  /  rounded caps on the first and last segment, Nerd Font  arrow separators between segments, Nerd Font icons per segment (clock for 5h, calendar for 7d, folder for worktree, branch glyph, ⚡ for effort). Uses 256-color dark bgs (~10–20% brightness) with bright accent foreground text — readable and discrete, not saturated. Compact (10-char bar, single-letter effort, stripped model name) — fits 80 cols. | ⚠️ partially (foreground inherits palette only via the bright accent slots; backgrounds are 256-color dark shades for contrast control) |
+| `panels` | **Most graphical (theme-neutral)**: filled backgrounds per segment (each its own dark muted shade), Nerd Font  /  rounded caps on the first and last segment, Nerd Font  arrow separators between segments, Nerd Font icons per segment (clock for 5h, calendar for 7d, folder for worktree, branch glyph, ⚡ for effort). Uses 256-color dark bgs (~10–20% brightness) with bright accent foreground text — readable and discrete, not saturated. Compact (10-char bar, single-letter effort, stripped model name) — fits 80 cols. | ⚠️ partially (foreground inherits palette only via the bright accent slots; backgrounds are 256-color dark shades for contrast control) |
+| `catppuccin-mocha` | **Catppuccin Mocha–branded**: same chrome as `panels` (rounded caps,  arrows, icons), but the alternating Surface0/Surface1 backgrounds and per-segment accent foregrounds (Sapphire context, Yellow 5h, Green 7d, Sky worktree, Mauve branch, Peach effort, Text model) come from the official Catppuccin palette via 24-bit color codes. Coordinates visually with the OMP `catppuccin_mocha` prompt. | ❌ (uses fixed Catppuccin RGB values regardless of terminal palette — pair with a Catppuccin terminal scheme for the best look) |
 | `minimal` | `model · 42% · main · high effort` — extreme reduction, no bar, no rate limits, no worktree name | ✅ |
 
 **Theme-aware vs fixed.** Themes that use ANSI base color codes (`\033[31m`, `\033[91m`, etc.) render through the terminal's active palette — change WezTerm/Ghostty/cmux from Tokyo Night Moon to Dracula and the statusline colors swap automatically. `rainbow` and `panels` use 256-color indices for some or all of their colors: `rainbow` for everything, `panels` only for the dark backgrounds (it picks specific muted shades for contrast control). If you want the per-segment colorful look but want it to fully inherit your terminal theme, use `terminal`. If you want the most graphical chrome (rounded caps, filled backgrounds, icons), use `panels`.
@@ -28,7 +29,7 @@ Color coding (in `pure` and `minimal`): bar / 5h / 7d go **green ≤50%**, **yel
 
 ## Preview themes side-by-side
 
-Run the bundled preview script — renders all six themes with sample data:
+Run the bundled preview script — renders all seven themes with sample data:
 
 ```sh
 bash <skill-dir>/scripts/preview-statusline-themes.sh
@@ -50,7 +51,7 @@ command -v jq >/dev/null || brew install jq
 3. **Wire into `~/.claude/settings.json`**, picking the theme by passing it as an argument to the command. Don't overwrite the file — merge with `jq` to preserve existing settings:
 
 ```sh
-THEME=pure   # or: powerline | rainbow | terminal | panels | minimal
+THEME=pure   # or: powerline | rainbow | terminal | panels | catppuccin-mocha | minimal
 tmp=$(mktemp)
 if [[ -f ~/.claude/settings.json ]]; then
   jq --arg cmd "sh ~/.claude/statusline-command.sh $THEME" \

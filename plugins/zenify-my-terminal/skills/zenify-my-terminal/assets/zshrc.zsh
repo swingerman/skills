@@ -101,6 +101,63 @@ else
   [[ -f $HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh ]]   && source $HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh
 fi
 
+# --- Project switcher (terminal-neutral, used by Ghostty/cmux/iTerm/etc) ---
+# WezTerm has its own Cmd-P binding via wezterm.lua; this is the fallback.
+proj() {
+  local d
+  d=$(ls ~/projects 2>/dev/null | fzf --height 40% --reverse --prompt='project> ') || return
+  cd ~/projects/"$d"
+}
+
+# --- Claude Code agent-teams launcher --------------------------------------
+# Claude Code's teammateMode="tmux" makes parallel teammates spawn as split
+# panes, but only when $TMUX is set. This wrapper ensures we're inside tmux
+# before launching, so the split-pane mode actually activates.
+claude-team() {
+  if [[ -n "$TMUX" ]]; then
+    claude "$@"
+  elif tmux has-session -t claude 2>/dev/null; then
+    tmux attach-session -t claude
+  else
+    tmux new-session -s claude "claude $*"
+  fi
+}
+
+# --- Screenshot paste workaround for Claude Code in WezTerm + tmux ---------
+# Cmd+V image paste doesn't reach Claude Code reliably when running inside
+# tmux + WezTerm (binary clipboard data gets stripped by the multiplexer
+# layer). Workaround: save the clipboard image to a temp file, print the
+# path, then paste the path into Claude's prompt. See
+# references/image-paste-workaround.md for the full story.
+imgpaste() {
+  local file="/tmp/claude-screenshot-$(date +%s).png"
+  if command -v pngpaste >/dev/null 2>&1; then
+    pngpaste "$file" 2>/dev/null
+  else
+    /usr/bin/osascript <<APPLESCRIPT >/dev/null 2>&1
+try
+  set theData to (the clipboard as «class PNGf»)
+  set theFile to (open for access POSIX file "$file" with write permission)
+  write theData to theFile
+  close access theFile
+on error
+  try
+    close access POSIX file "$file"
+  end try
+end try
+APPLESCRIPT
+  fi
+  if [[ -s "$file" ]]; then
+    echo "$file"
+  else
+    echo "No image in clipboard. Take a screenshot first:" >&2
+    echo "  Cmd-Ctrl-Shift-4   → select region, copies to clipboard" >&2
+    echo "  Cmd-Ctrl-Shift-3   → full screen, copies to clipboard" >&2
+    rm -f "$file" 2>/dev/null
+    return 1
+  fi
+}
+
 # --- PRESERVED: sync integrations from the user's previous .zshrc ----------
 # Things that need to be available immediately (e.g. fnm runs on every cd):
 #   command -v fnm >/dev/null 2>&1 && eval "$(fnm env --use-on-cd --shell zsh)"

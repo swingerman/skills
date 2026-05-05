@@ -39,7 +39,8 @@ The fast-track stack is fixed — this is the "what we set up the day this skill
 | Lazygit | `Cmd-Shift-G` — pane below (50%) |
 | Workspace nav | `Cmd-Shift-]` / `Cmd-Shift-[` cycle, `Cmd-Shift-O` overview |
 | Kill workspace | `Cmd-Shift-Q` — closes every tab in the active workspace |
-| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `panels` — filled backgrounds, Nerd Font icons per segment, theme-aware ANSI colors, compact for 80 cols). Other themes: `pure`, `powerline` (full-width filled), `rainbow` (256-color fixed), `terminal` (text-only theme-aware), `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
+| Claude Code statusline | Installed **if and only if `~/.claude/` exists** — themed bundled script (default theme: `panels` — filled backgrounds, Nerd Font icons per segment, theme-neutral, compact for 80 cols). Other themes: `pure`, `powerline` (full-width filled), `rainbow` (256-color fixed), `terminal` (text-only theme-aware), `catppuccin-mocha` (Catppuccin-branded panels), `minimal`. See [references/claude-statusline.md](references/claude-statusline.md). |
+| `imgpaste` shell function | **Always installed.** Workaround for Cmd+V image paste not working through tmux + WezTerm + Claude Code. Saves clipboard image to `/tmp/claude-screenshot-<ts>.png` and prints the path; user pastes the path into Claude's prompt. Uses `pngpaste` if available, falls back to `osascript`. See [references/image-paste-workaround.md](references/image-paste-workaround.md). |
 | Neovim + NvChad | **Not** included in fast-track — it's opt-in only since it overwrites `~/.config/nvim` and many users have an existing config. Available in guided mode (decision #7). |
 | tmux + agent-teams setup | **Always installed.** `brew install tmux`, bundled `~/.tmux.conf`, and a `claude-team` zsh launcher. **If `~/.claude/` exists**, also merge `teammateMode: "tmux"` into `~/.claude/settings.json` via jq so Claude's parallel teammates spawn as split panes. Same `~/.claude/` gate as the statusline. See [references/agent-teams-tmux.md](references/agent-teams-tmux.md). |
 | Verification | Run all checks in step 7 |
@@ -138,6 +139,7 @@ brew install tmux              # if terminal needs it for splits (Alacritty / Ap
 brew install jq                # required by the bundled Claude Code statusline (only if Claude Code is detected)
 brew install neovim ripgrep fd # if user opted into NvChad (decision #7) — not in fast-track
 brew install tmux              # always in fast-track; in guided mode only if user opted in at decision #8
+brew install pngpaste          # optional speed-up for the imgpaste screenshot workaround (osascript fallback works without it)
 ```
 
 Do **not** run `brew tap homebrew/command-not-found` — it was deprecated and the tap is empty.

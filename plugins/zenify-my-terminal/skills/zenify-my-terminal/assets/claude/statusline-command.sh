@@ -237,6 +237,78 @@ case "$theme" in
     printf "%b" "$out"
     ;;
 
+  # CATPPUCCIN-MOCHA: matches the Catppuccin Mocha palette so the statusline
+  # visually coordinates with the OMP catppuccin_mocha prompt. Uses 24-bit
+  # color codes (\033[48;2;R;G;Bm) with the official Catppuccin palette:
+  # https://catppuccin.com/palette/
+  #   Backgrounds alternate Surface0 / Surface1 for subtle segment division.
+  #   Foregrounds use bright accent colors per segment.
+  #   Rounded   caps on the first/last segment in the segment color.
+  catppuccin-mocha)
+    arrow=""
+    rcap_l=""
+    rcap_r=""
+
+    # Surface backgrounds (alternate)
+    s0bg="48;2;49;50;68"     # Surface0
+    s1bg="48;2;69;71;90"     # Surface1
+    # Foreground accents
+    text_fg="38;2;205;214;244"      # Text
+    sapphire_fg="38;2;116;199;236"  # Sapphire (context bar)
+    yellow_fg="38;2;249;226;175"    # Yellow (5h)
+    green_fg="38;2;166;227;161"     # Green  (7d)
+    sky_fg="38;2;137;220;235"       # Sky    (worktree)
+    mauve_fg="38;2;203;166;247"     # Mauve  (branch)
+    peach_fg="38;2;250;179;135"     # Peach  (effort)
+
+    short_model=$(printf '%s' "$model" | sed 's/ *(.*)//')
+
+    out=""
+    prev_bg=""
+
+    push_seg() {
+      bg="$1"; fg="$2"; content="$3"
+      # bg here is the "48;2;R;G;B" form; extract RGB for the cap/arrow color
+      bg_rgb=$(printf '%s' "$bg" | sed 's/^48;/38;/')
+      if [ -z "$prev_bg" ]; then
+        out="${out}\033[${bg_rgb}m${rcap_l}\033[0m"
+      else
+        prev_rgb=$(printf '%s' "$prev_bg" | sed 's/^48;/38;/')
+        out="${out}\033[${prev_rgb};${bg}m${arrow}\033[0m"
+      fi
+      out="${out}\033[${bg};${fg}m ${content} \033[0m"
+      prev_bg="$bg"
+    }
+
+    push_seg "$s0bg" "$text_fg"     "${short_model}"
+
+    if [ -n "$used_int" ]; then
+      filled=$(( used_int * 10 / 100 )); empty=$(( 10 - filled ))
+      sbar=""
+      i=0; while [ $i -lt $filled ]; do sbar="${sbar}█"; i=$((i+1)); done
+      i=0; while [ $i -lt $empty  ]; do sbar="${sbar}░"; i=$((i+1)); done
+      push_seg "$s1bg" "$sapphire_fg" "${sbar} ${used_int}%"
+    fi
+
+    [ -n "$five_int"        ] && push_seg "$s0bg" "$yellow_fg" " ${five_int}%"
+    [ -n "$week_int"        ] && push_seg "$s1bg" "$green_fg"  " ${week_int}%"
+    [ -n "$worktree_name"   ] && push_seg "$s0bg" "$sky_fg"    " ${worktree_name}"
+    [ -n "$worktree_branch" ] && push_seg "$s1bg" "$mauve_fg"  " ${worktree_branch}"
+
+    if [ -n "$effort" ]; then
+      case "$effort" in
+        low) e="l" ;; medium) e="m" ;; high) e="h" ;; xhigh) e="x" ;; *) e="?" ;;
+      esac
+      push_seg "$s0bg" "$peach_fg" "⚡${e}"
+    fi
+
+    if [ -n "$prev_bg" ]; then
+      prev_rgb=$(printf '%s' "$prev_bg" | sed 's/^48;/38;/')
+      out="${out}\033[${prev_rgb}m${rcap_r}\033[0m"
+    fi
+    printf "%b" "$out"
+    ;;
+
   # MINIMAL: model · pct% · branch · effort. Single dim middle-dot separator.
   minimal)
     out="\033[2m${model}\033[0m"
@@ -251,7 +323,7 @@ case "$theme" in
 
   *)
     echo "Unknown theme: $theme" >&2
-    echo "Available themes: pure, powerline, rainbow, terminal, panels, minimal" >&2
+    echo "Available themes: pure, powerline, rainbow, terminal, panels, catppuccin-mocha, minimal" >&2
     exit 1
     ;;
 esac
