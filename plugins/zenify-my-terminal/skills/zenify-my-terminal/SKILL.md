@@ -227,6 +227,7 @@ Critical macOS-specific issues that will eat hours if missed. Read that file bef
 - **Use zinit turbo mode (`wait lucid`) for plugins** — synchronous loading adds ~500ms per plugin.
 - **Defer slow third-party completions (gcloud, bun, entire CLI) via `zinit wait`** — these can each cost 1-2s synchronously.
 - **Skip the deprecated `homebrew/command-not-found` tap** — it was removed.
+- **Use `eval "$(cmd)"` not `source <(cmd)` inside zinit deferred blocks** — process-substitution fds can be closed mid-read by the zinit scheduler firing another hook, causing intermittent `/dev/fd/N: number expected` errors on new shells. See [references/gotchas.md](references/gotchas.md).
 
 Plus terminal-specific gotchas (in the per-terminal reference): WezTerm needs an explicit sub-process PATH, Apple Terminal needs `~/.bash_sessions_disable` for fast startup, etc.
 

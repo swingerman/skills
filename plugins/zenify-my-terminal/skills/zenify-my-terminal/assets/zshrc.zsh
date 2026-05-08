@@ -95,7 +95,7 @@ eval "$(zoxide init zsh)"
 # fzf shell integration. fzf >= 0.48 supports `fzf --zsh`; older brew installs
 # fall back to the legacy script paths.
 if fzf --zsh >/dev/null 2>&1; then
-  source <(fzf --zsh)
+  eval "$(fzf --zsh)"
 else
   [[ -f $HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh ]] && source $HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh
   [[ -f $HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh ]]   && source $HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh

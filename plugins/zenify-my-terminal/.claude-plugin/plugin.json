@@ -1,6 +1,6 @@
 {
   "name": "zenify-my-terminal",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Set up a fast, calm, focused terminal on macOS. Two modes — guided (walks through choices: terminal between WezTerm/Ghostty/cmux/Alacritty/Kitty/iTerm2/Apple Terminal, prompt between Starship/Oh My Posh with live theme preview script, plugins, optional extras) or fast-track (zero questions, fully coordinated Catppuccin Macchiato stack: WezTerm + JetBrainsMono Nerd Font + Catppuccin Macchiato color scheme + Oh My Posh catppuccin.omp.json rounded-pill prompt + zinit turbo + git/sudo/aws/kubectl + project switcher + viddy + lazygit + git-aware status bar + tmux + claude-team launcher so Claude Code agent-teams spawn as split panes + imgpaste workaround for image paste through tmux + Shift+Enter newline support via kitty keyboard protocol). When Claude Code is detected (~/.claude/ exists), also installs a custom catppuccin-macchiato statusline (model, context bar, rate limits, worktree, branch, effort) and merges teammateMode=tmux into settings.json. Writes configs with macOS gotchas already handled. Ends with a keyboard-shortcuts cheat-sheet.",
   "author": {
     "name": "Miklos Szanyi",

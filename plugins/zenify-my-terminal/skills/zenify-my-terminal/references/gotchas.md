@@ -112,6 +112,30 @@ In Apple Terminal, every shell start sources `/etc/zshrc` which sources `/etc/zs
 
 **Implication:** Realistic startup target in Apple Terminal is ~2-3s. In WezTerm/Ghostty/Alacritty, sub-second is achievable.
 
+### `source <(cmd)` is fragile inside zinit deferred loads — use `eval "$(cmd)"`
+
+In a synchronous `~/.zshrc`, `source <(somecommand)` works fine. But inside zinit's deferred (`wait lucid`) blocks, multiple plugins fire close together off the scheduler — and process-substitution fds (`/dev/fd/N`) can be closed mid-read when another deferred hook runs. The shell ends up parsing partial output and you get cryptic errors like `/dev/fd/18:214: number expected` and `/dev/fd/18:215: command not found: Run`. The errors are intermittent — they look like flaky shell startup that "sometimes" fails on a new window.
+
+**Fix:** use `eval "$(somecommand)"` instead. `eval` captures the command's output as a fully-formed string before zsh parses it, so nothing depends on a fd staying open.
+
+Wrong:
+```zsh
+zinit wait lucid for \
+  has'entire' id-as'entire-completion' \
+    atinit'source <(entire completion zsh)' \
+    zdharma-continuum/null
+```
+
+Right:
+```zsh
+zinit wait lucid for \
+  has'entire' id-as'entire-completion' \
+    atinit'eval "$(entire completion zsh)"' \
+    zdharma-continuum/null
+```
+
+This applies to anything sourced via process substitution in deferred contexts: `entire`, custom CLIs that ship completion via `<cmd> completion zsh`, etc. The synchronous `source <(fzf --zsh)` in `~/.zshrc` proper is also safer as `eval "$(fzf --zsh)"` since it removes one possible source of intermittent failure.
+
 ## Plugin / tap status gotchas
 
 ### `homebrew/command-not-found` tap is dead
