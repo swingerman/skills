@@ -1,0 +1,13 @@
+{
+  "name": "git-worktree-runner",
+  "version": "0.1.0",
+  "description": "Install, configure, and use git-worktree-runner (git gtr) for parallel-branch development. Adds a gwtr shell alias, six /gwtr-* slash commands (new, list, rm, clean, doctor, link-ds), and Cricut-specific conventions for canvas ↔ DesignSpace yalc linking.",
+  "author": {
+    "name": "Miklos Szanyi",
+    "url": "https://github.com/swingerman"
+  },
+  "homepage": "https://github.com/swingerman/skills/tree/main/plugins/git-worktree-runner",
+  "repository": "https://github.com/swingerman/skills",
+  "license": "MIT",
+  "keywords": ["git", "worktree", "git-gtr", "parallel-development", "branching", "yalc", "cricut", "monorepo"]
+}
