@@ -29,6 +29,12 @@ When `~/.claude/` is detected, also installs a custom catppuccin-macchiato statu
 
 Trigger by running `/zenify-my-terminal` or saying *"zen-ify my terminal"*.
 
+### [intent](plugins/intent)
+
+Turn a rough idea into a standard intent — **What / Why / Guardrails / Done means** — through a layered interview. High-level gaps first; goes deeper only when you agree, and recommends whether it's worth it. Output is a self-contained prompt to hand to an agent or save to a file.
+
+Trigger by running `/intent <your idea>`.
+
 ## Where else to look
 
 - **Methodology kit (DAE) + ATDD + crap-analyzer**: [`swingerman/atdd`](https://github.com/swingerman/atdd) (rename pending → `swingerman/disciplined-agentic-engineering`)
@@ -40,6 +46,9 @@ Trigger by running `/zenify-my-terminal` or saying *"zen-ify my terminal"*.
 ├── .claude-plugin/
 │   └── marketplace.json            # marketplace manifest
 └── plugins/
+    ├── intent/
+    │   ├── .claude-plugin/plugin.json
+    │   └── skills/intent/SKILL.md
     └── zenify-my-terminal/
         ├── .claude-plugin/
         │   └── plugin.json

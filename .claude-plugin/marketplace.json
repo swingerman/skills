@@ -16,6 +16,14 @@
       "version": "0.14.1",
       "category": "developer-experience",
       "tags": ["terminal", "zsh", "wezterm", "ghostty", "cmux", "tmux", "alacritty", "kitty", "iterm2", "starship", "oh-my-posh", "zinit", "macos", "shell", "claude-code", "agent-teams"]
+    },
+    {
+      "name": "intent",
+      "source": "./plugins/intent",
+      "description": "Turn a rough idea into a standard intent — What / Why / Guardrails / Done means — via a layered interview: high-level gaps first, deeper only when you agree (with a recommendation either way). Output is a self-contained prompt to hand to an agent or file.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "tags": ["intent", "spec", "prompt", "interview", "requirements", "definition-of-done"]
     }
   ]
 }

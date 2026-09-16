@@ -1,0 +1,13 @@
+{
+  "name": "intent",
+  "version": "0.1.0",
+  "description": "Turn a rough idea into a standard intent — What / Why / Guardrails / Done means — via a layered interview: high-level gaps first, deeper only when you agree (with a recommendation either way). Output is a self-contained prompt to hand to an agent or file.",
+  "author": {
+    "name": "Miklos Szanyi",
+    "url": "https://github.com/swingerman"
+  },
+  "homepage": "https://github.com/swingerman/skills/tree/main/plugins/intent",
+  "repository": "https://github.com/swingerman/skills",
+  "license": "MIT",
+  "keywords": ["intent", "spec", "prompt", "interview", "requirements", "definition-of-done"]
+}
