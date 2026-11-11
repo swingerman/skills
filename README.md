@@ -35,6 +35,12 @@ Turn a rough idea into a standard intent — **What / Why / Guardrails / Done me
 
 Trigger by running `/intent <your idea>`.
 
+### [surface-skills](plugins/surface-skills)
+
+Map any project into per-surface agent skills: how to launch, use, verify and debug each feature. You get one skill per client or backend (launch on its own ports, doctor, drive, cleanup), a `references/features.md` map, and a README per feature (user POV, keys, API, code, verify, debug, gotchas). A drift check fails the build when the map goes stale.
+
+Trigger by saying *"map the features for agents"*.
+
 ## Where else to look
 
 - **Methodology kit (DAE) + ATDD + crap-analyzer**: [`swingerman/atdd`](https://github.com/swingerman/atdd) (rename pending → `swingerman/disciplined-agentic-engineering`)
@@ -49,6 +55,9 @@ Trigger by running `/intent <your idea>`.
     ├── intent/
     │   ├── .claude-plugin/plugin.json
     │   └── skills/intent/SKILL.md
+    ├── surface-skills/
+    │   ├── .claude-plugin/plugin.json
+    │   └── skills/surface-skills/{SKILL.md,references/}
     └── zenify-my-terminal/
         ├── .claude-plugin/
         │   └── plugin.json

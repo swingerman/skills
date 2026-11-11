@@ -1,0 +1,13 @@
+{
+  "name": "surface-skills",
+  "version": "0.1.0",
+  "description": "Map any project into per-surface agent skills: one skill per client/backend with launch, health check, drive and cleanup; a features map; a README per feature (user POV, keys, API, code, verify, debug, gotchas); and a drift check that fails the build when the map goes stale.",
+  "author": {
+    "name": "Miklos Szanyi",
+    "url": "https://github.com/swingerman"
+  },
+  "homepage": "https://github.com/swingerman/skills/tree/main/plugins/surface-skills",
+  "repository": "https://github.com/swingerman/skills",
+  "license": "MIT",
+  "keywords": ["agents", "skills", "verification", "feature-map", "documentation", "drift-check"]
+}
